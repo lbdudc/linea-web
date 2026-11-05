@@ -4,7 +4,13 @@ import starlight from '@astrojs/starlight';
 import mermaid from 'astro-mermaid';
 
 // https://astro.build/config
+// GitHub Pages serves a project site from https://<owner>.github.io/<repo>/. The workflow sets BASE_PATH=/linea-web;
+// locally it is empty and the site is served from the root. scripts/apply-base.mjs fixes the links written by hand.
+const base = (process.env.BASE_PATH ?? '').trim();
+
 export default defineConfig({
+	site: process.env.SITE_URL || 'https://lbdudc.github.io',
+	base: base && base !== '/' ? '/' + base.replace(/^\/+|\/+$/g, '') : '/',
 	redirects: {
 		'/fundamentals/what-is-linea': '/concepts/what-is-linea/',
 		'/fundamentals/metamodels': '/concepts/metamodels/',
