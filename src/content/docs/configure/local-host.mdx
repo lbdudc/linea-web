@@ -1,0 +1,93 @@
+---
+title: The local host
+description: "Run LINEA with no GitLab or GitHub: repositories live on the LINEA server and people sign in with LINEA accounts."
+sidebar:
+  order: 3
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+The **`local`** host keeps every repository on the LINEA server and serves it over HTTP at `/git`. People sign in with accounts made on LINEA. It is the quickest way to try LINEA and works for small teams.
+
+| | |
+|---|---|
+| Sign-in | Username and password, made on LINEA |
+| Repositories | A folder on the server (`LINEA_REPOS_DIR`) |
+| Merge requests are called | *change requests* |
+| Pipelines | **None.** The local host runs no CI |
+| OAuth app needed | No |
+
+<Aside type="note">
+`local` switches itself on **only when no other host is configured**. If you also configure GitLab or GitHub, declare `local` explicitly in `linea.config.yml` to keep it.
+</Aside>
+
+## Set it up
+
+<Steps>
+
+1. **Choose the first administrator.** On the first start LINEA creates an account for each name in `ADMIN_USERS` that does not exist yet, using `LINEA_ADMIN_PASSWORD` as the password.
+
+   ```ini title="deploy/.env"
+   ADMIN_USERS=admin
+   LINEA_ADMIN_PASSWORD=choose-a-long-password
+   ```
+
+2. **Set where repositories live.** Docker already mounts a volume at `/data/repos`. Outside Docker, point to a folder:
+
+   ```ini
+   LINEA_REPOS_DIR=/var/lib/linea/repos
+   ```
+
+3. **Set the address repositories are served at.** It defaults to `<REDIRECT_URI>/git`. Override it only if the public address differs:
+
+   ```ini
+   LINEA_GIT_URL=https://linea.example.com/git
+   ```
+
+4. **Start LINEA** and sign in as `admin`. Make more accounts under **Configuration → Users**.
+
+</Steps>
+
+Or in `linea.config.yml`:
+
+```yaml
+gitHosts:
+  primary: local
+  local:
+    dataDir: /data/repos
+```
+
+## Accounts
+
+- Usernames: letters, digits, `.`, `-` and `_`. The name `registry` is reserved.
+- Passwords: 8 to 72 bytes. The minimum length can be raised in [instance settings](/configure/instance-settings/).
+- **Wrong passwords are counted per person and address.** After `maxFailedSignIns` (10 by default) the door closes for `lockMinutes` (15) and answers `429`. The web sign-in and `git` share the count.
+- People change their own password and renew their **git token** under **Local account**.
+- Administrators can disable or delete an account. Its repositories pass to another person, or to a name nobody can sign in with.
+
+## Using git against the local host
+
+Repositories can be cloned and pushed over HTTP, which is how the command line and your own editor reach them.
+
+```bash
+git clone https://<user>:<git-token>@linea.example.com/git/<group>/<name>.git
+```
+
+The **git token** is not stored. LINEA derives it from the account, a version number and the server secret (`JWT_SIGN_KEY`), so a copy of the database does not open any repository. Renewing it raises the version; **changing `JWT_SIGN_KEY` renews every token** and everyone signs in again.
+
+`LINEA_MAX_PUSH_MB` limits the size of one push.
+
+## Running it in production
+
+<Aside type="caution" title="One process per data folder">
+A lock file protects the repositories folder from a second process. Do not run two LINEA servers on the same `LINEA_REPOS_DIR`.
+</Aside>
+
+- **Back up MongoDB and the repositories folder together.** Accounts and lines live in MongoDB; code and permissions live in the repositories.
+- Deleted items are kept for **a week** in `trash/`.
+- Behind a reverse proxy, set `TRUST_PROXY` (Express's `trust proxy`, `1` by default) so the lockout counts real client addresses.
+- The registry group is **read-only** for everyone except its owner and the administrators.
+
+## Moving to GitLab or GitHub later
+
+A line stays on the host it was created on, and the `local` host has its own accounts. To move, add the new host, create the lines there and push the code across with git. See [Git hosts](/configure/git-hosts/).

@@ -1,0 +1,190 @@
+---
+import Landing from '../layouts/Landing.astro';
+import Configurator from '../components/Configurator.astro';
+import Icon from '../components/Icon.astro';
+import Shot from '../components/Shot.astro';
+import Tour from '../components/Tour.astro';
+import LineTypes from '../components/LineTypes.astro';
+import Layers from '../components/Layers.astro';
+import LineToProducts from '../components/diagrams/LineToProducts.astro';
+import GenerationFlow from '../components/diagrams/GenerationFlow.astro';
+import Architecture from '../components/diagrams/Architecture.astro';
+---
+<Landing
+	title="LINEA – Software product line management"
+	description="Keep one repository with all the code your software can have, pick the features of each customer, and let LINEA generate their product."
+>
+	<!-- 1. hero -->
+	<section class="hero">
+		<div class="wrap hero__in">
+			<div>
+				<h1>One product line. A product for every customer.</h1>
+				<p class="hero__lead">LINEA keeps all the code your software can have in a single repository, annotated by feature. Pick the features a customer needs and it generates their application in a repository of its own.</p>
+				<div class="hero__cta">
+					<a class="btn" href="/guides/getting-started/">Get started <Icon name="arrow" size={18} /></a>
+					<a class="btn btn--ghost" href="/introduction/">Read the docs</a>
+				</div>
+				<p class="hero__req"><Icon name="terminal" size={15} /> Node.js 22 · MongoDB · Git 2.38+</p>
+			</div>
+			<Shot name="lines-products" ratio="1456/520" alt="The FieldService product line in LINEA, listing its three products" eager sizes="(min-width: 1200px) 1180px, 100vw" />
+		</div>
+	</section>
+
+	<!-- 2. configurator -->
+	<section class="sec sec--fit sec--dots" id="configurator">
+		<div class="wrap">
+			<Configurator>
+				<div class="sec__head" data-reveal>
+					<h2>Pick features. LINEA writes the product.</h2>
+					<p>The line's code is annotated with its feature. Toggle one and watch the product file change. Payments needs Account.</p>
+				</div>
+			</Configurator>
+		</div>
+	</section>
+
+	<!-- 3. problem -->
+	<section class="sec">
+		<div class="wrap">
+			<div class="sec__head" data-reveal>
+				<h2>Stop fixing the same bug in every copy.</h2>
+			</div>
+			<div class="two" data-reveal>
+				<div>
+					<h3><span class="ico ico--bad"><Icon name="copy" size={18} /></span>Cloning the project per customer</h3>
+					<p>Fast at first. Then every fix has to be replayed by hand in each copy, and the cost grows with every variant.</p>
+					<ul>
+						<li><Icon name="x" size={16} />A defect is fixed N times</li>
+						<li><Icon name="x" size={16} />Copies drift apart</li>
+						<li><Icon name="x" size={16} />Nobody knows what each customer runs</li>
+					</ul>
+				</div>
+				<div>
+					<h3><span class="ico ico--good"><Icon name="layers" size={18} /></span>Maintaining one product line</h3>
+					<p>A single set of assets with all the possible code, annotated by feature. For each customer you pick a subset and LINEA generates the application.</p>
+					<ul>
+						<li><Icon name="check" size={16} />Fix once, in the line</li>
+						<li><Icon name="check" size={16} />Products stay in sync through update merge requests</li>
+						<li><Icon name="check" size={16} />Every product keeps its own repository and history</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- 3b. line types -->
+	<section class="sec sec--band" id="types">
+		<div class="wrap">
+			<div class="sec__head" data-reveal>
+				<h2>Three ways to build a line.</h2>
+				<p>Pick how much you write yourself. Every kind generates products the same way. Click each one to see how it works.</p>
+			</div>
+			<div data-reveal><LineTypes /></div>
+		</div>
+	</section>
+
+	<!-- 4. flow + diagram -->
+	<section class="sec sec--tint" id="flow">
+		<div class="wrap">
+			<div class="sec__head" data-reveal>
+				<h2>From reusable modules to many products.</h2>
+				<p>Modules bring code, features and models. A line composes them; each product picks what it needs.</p>
+			</div>
+			<ol class="row4" data-stagger>
+				<li><span class="ico"><Icon name="box" size={20} /></span><h3>Define modules and metamodels</h3><p>Reusable code, features and models, plus the languages that describe them.</p></li>
+				<li><span class="ico"><Icon name="puzzle" size={20} /></span><h3>Compose the line</h3><p>LINEA checks dependencies and composes the feature model.</p></li>
+				<li><span class="ico"><Icon name="tree" size={20} /></span><h3>Select features per product</h3><p>Each product has its own selection and its own models.</p></li>
+				<li><span class="ico"><Icon name="sparkle" size={20} /></span><h3>Generate and keep up to date</h3><p>Code goes to the product's repository, with a merge request when the line changes.</p></li>
+			</ol>
+			<div class="dgwrap" data-reveal><LineToProducts /></div>
+		</div>
+	</section>
+
+	<!-- 5. tour -->
+	<section class="sec sec--band" id="tour-section">
+		<div class="wrap">
+			<div class="sec__head" data-reveal>
+				<h2>See it in the app.</h2>
+				<p>The same flow, in LINEA's own interface. The screenshots follow your light or dark theme.</p>
+			</div>
+			<Tour />
+		</div>
+	</section>
+
+	<!-- 6. generation diagram -->
+	<section class="sec" id="generation">
+		<div class="wrap">
+			<div class="sec__head" data-reveal>
+				<h2>Generation never overwrites your changes.</h2>
+				<p>LINEA only writes to <code>bigbang</code>. Your product's <code>main</code> receives each new version through a merge request, so git combines generated code with your manual edits.</p>
+			</div>
+			<div class="dgwrap" data-reveal><GenerationFlow /></div>
+			<ul class="points" data-stagger>
+				<li><span class="ico"><Icon name="branch" size={18} /></span><div><h3>A branch per generation</h3><p>Each run commits to <code>generation/X.Y.Z</code>, merges it into <code>bigbang</code> and tags the version.</p></div></li>
+				<li><span class="ico"><Icon name="merge" size={18} /></span><div><h3>Updates arrive as merge requests</h3><p>The <code>bigbang → main</code> request shows conflicts when your edits touch generated files.</p></div></li>
+				<li><span class="ico"><Icon name="shield" size={18} /></span><div><h3>The pipeline guards main</h3><p>When the project requires a green pipeline, <code>main</code> only receives code that passed the tests.</p></div></li>
+			</ul>
+		</div>
+	</section>
+
+	<!-- 7. layers -->
+	<section class="sec sec--tint" id="layers-section">
+		<div class="wrap">
+			<div class="sec__head" data-reveal>
+				<h2>A complete core, with the rest optional.</h2>
+				<p>Every capability of LINEA belongs to exactly one of three layers. The question that decides it is simple: can LINEA run without it?</p>
+			</div>
+			<Layers />
+		</div>
+	</section>
+
+	<!-- 8. architecture + hosts -->
+	<section class="sec sec--band" id="architecture">
+		<div class="wrap">
+			<div class="sec__head" data-reveal>
+				<h2>Lines and products are plain git repositories.</h2>
+				<p>Git is the source of truth. MongoDB only keeps accounts, settings and an index. Use the git server you already have; several can be active at once.</p>
+			</div>
+			<div class="dgwrap" data-reveal><Architecture /></div>
+			<div class="hosts" data-stagger>
+				<div class="host"><h3><span class="ico"><Icon name="server" size={18} /></span>Local</h3><p>Repositories live on the LINEA server and can be cloned over HTTP. Good for trials and small teams. Runs no pipelines.</p><code>LINEA accounts</code></div>
+				<div class="host"><h3><span class="ico"><Icon name="gitlab" size={18} /></span>GitLab</h3><p>The usual choice. Lines live in GitLab groups and get CI.</p><code>GitLab OAuth</code></div>
+				<div class="host"><h3><span class="ico"><Icon name="github" size={18} /></span>GitHub</h3><p>The same, for GitHub and GitHub Enterprise.</p><code>GitHub OAuth</code></div>
+			</div>
+		</div>
+	</section>
+
+	<!-- 9. install -->
+	<section class="sec" id="install">
+		<div class="wrap">
+			<div class="sec__head" data-reveal>
+				<h2>Up and running in minutes.</h2>
+				<p>Start a development instance, or deploy with Docker Compose.</p>
+			</div>
+			<div class="term-grid" data-stagger>
+				<div class="term">
+					<div class="term__bar"><Icon name="terminal" size={15} /> Development</div>
+<pre><span class="p">$</span> cd linea
+<span class="p">$</span> npm install
+<span class="p">$</span> npm run dev</pre>
+				</div>
+				<div class="term">
+					<div class="term__bar"><Icon name="container" size={15} /> Docker</div>
+<pre><span class="p">$</span> cd linea/deploy
+<span class="p">$</span> docker compose up --build -d</pre>
+				</div>
+			</div>
+			<p class="reqs" data-reveal><span><Icon name="check" size={15} /><b>Node.js 22</b></span><span><Icon name="db" size={15} /><b>MongoDB</b> as a replica set</span><span><Icon name="branch" size={15} /><b>Git 2.38+</b> for the local git host</span></p>
+		</div>
+	</section>
+
+	<!-- 10. cta -->
+	<section class="cta">
+		<div class="wrap" data-stagger>
+			<h2>Create your first line.</h2>
+			<div class="hero__cta">
+				<a class="btn" href="/guides/getting-started/">Get started <Icon name="arrow" size={18} /></a>
+				<a class="btn btn--ghost" href="/install/overview/">Installation guide</a>
+			</div>
+		</div>
+	</section>
+</Landing>

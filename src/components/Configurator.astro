@@ -1,0 +1,113 @@
+---
+// Code in the line is annotated with LINEA's real syntax: /*% if (feature.X) { %*/ … /*% } %*/
+type Block = { feature?: string; lines: string[]; gap?: boolean };
+const blocks: Block[] = [
+	{ lines: ["import { createApp, Catalog } from './core'"] },
+	{ feature: 'Account', lines: ["import { SignIn } from './account'"] },
+	{ feature: 'Maps', lines: ["import { StoreMap } from './map'"] },
+	{ feature: 'Payments', lines: ["import { Checkout } from './payments'"] },
+	{ feature: 'Reports', lines: ["import { Reports } from './reports'"] },
+	{ gap: true, lines: ['const app = createApp({ pages: [Catalog] })'] },
+	{ gap: true, feature: 'Account', lines: ['app.use(SignIn)'] },
+	{ feature: 'Maps', lines: ['app.use(StoreMap)'] },
+	{ feature: 'Payments', lines: ['app.use(Checkout)'] },
+	{ feature: 'Reports', lines: ['app.use(Reports)'] },
+	{ gap: true, lines: ["app.mount('#app')"] },
+];
+const features = [
+	{ id: 'Account', hint: 'Sign-up and sign-in' },
+	{ id: 'Maps', hint: 'Store locator' },
+	{ id: 'Payments', hint: 'Requires Account' },
+	{ id: 'Reports', hint: 'Sales by period' },
+];
+const icons: Record<string,string> = { Account: 'user', Maps: 'pin', Payments: 'card', Reports: 'chart' };
+const initial = new Set(['Account', 'Maps']);
+
+// Tiny build-time highlighter for the sample (comments, strings, keywords, calls, types).
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const hl = (line: string) =>
+	esc(line).replace(
+		/(\/\*%.*?%\*\/)|('[^']*')|\b(import|from|const)\b|\b([a-z_]\w*)(?=\()|\b([A-Z]\w*)\b/g,
+		(_m, ann, str, kw, fn, ty) =>
+			ann ? `<i class="t-ann">${ann}</i>`
+			: str ? `<i class="t-str">${str}</i>`
+			: kw ? `<i class="t-kw">${kw}</i>`
+			: fn ? `<i class="t-fn">${fn}</i>`
+			: `<i class="t-ty">${ty}</i>`,
+	);
+import Icon from './Icon.astro';
+---
+<div class="cfg" id="cfg">
+	<div class="cfg__side">
+	<slot />
+	<fieldset class="cfg__features cfg__uvl">
+		<legend>Feature model · NorthClient (UVL)</legend>
+		<div class="uvl__row" style="--d:0"><span class="t-kw">features</span></div>
+		<div class="uvl__row" style="--d:1"><span class="t-ty">NorthClient</span></div>
+		<div class="uvl__row" style="--d:2"><span class="t-kw">mandatory</span></div>
+		<label class="uvl__row cfg__base" style="--d:3"><input type="checkbox" checked disabled /><span class="t-ty">Catalog</span></label>
+		<div class="uvl__row" style="--d:2"><span class="t-kw">optional</span></div>
+		{features.map((f) => (
+			<label class="uvl__row cfg__f" style="--d:3">
+				<input type="checkbox" name={f.id} checked={initial.has(f.id)} />
+				<span class="t-ty">{f.id}</span>
+				{f.id === 'Payments' && <small class="uvl__hint" data-hint="Payments">// requires Account</small>}
+			</label>
+		))}
+		<div class="uvl__row" style="--d:0"><span class="t-kw">constraints</span></div>
+		<div class="uvl__row" style="--d:1"><span class="t-ty">Payments</span> <span class="t-kw">=&gt;</span> <span class="t-ty">Account</span></div>
+	</fieldset>
+	</div>
+
+	<div class="cfg__panel" role="group" aria-label="The line's annotated source">
+		<div class="cfg__bar"><span>src/main.js</span><span>line source</span></div>
+		<pre><code>{blocks.map((b) => (
+			<span class:list={['blk', { 'blk--base': !b.feature, 'blk--gap': b.gap }]} data-feature={b.feature}>
+				{b.feature && <span class="ann" set:html={hl(`/*% if (feature.${b.feature}) { %*/`)} />}
+				{b.lines.map((l) => <span class="ln" set:html={hl(l)} />)}
+				{b.feature && <span class="ann" set:html={hl('/*% } %*/')} />}
+			</span>
+		))}</code></pre>
+	</div>
+
+	<div class="cfg__panel cfg__panel--out" role="group" aria-label="The generated product file">
+		<div class="cfg__bar"><span>src/main.js</span><span id="cfg-count">generated</span></div>
+		<pre><code>{blocks.flatMap((b) =>
+			b.lines.map((l) => <span class:list={['out', { 'out--gap': b.gap }]} data-feature={b.feature} set:html={hl(l)} />),
+		)}</code></pre>
+	</div>
+</div>
+
+<script>
+	const root = document.getElementById('cfg');
+	if (root) {
+		const boxes = [...root.querySelectorAll<HTMLInputElement>('input[name]')];
+		const blocks = [...root.querySelectorAll<HTMLElement>('.blk')];
+		const outs = [...root.querySelectorAll<HTMLElement>('.out')];
+		const count = document.getElementById('cfg-count')!;
+		const byName = (n: string) => boxes.find((b) => b.name === n)!;
+		const hint = root.querySelector<HTMLElement>('[data-hint="Payments"]')!;
+		const isOn = (f?: string) => !f || byName(f).checked;
+		const render = () => {
+			for (const b of blocks) b.classList.toggle('blk--off', !isOn(b.dataset.feature));
+			let n = 0;
+			for (const o of outs) {
+				const on = isOn(o.dataset.feature);
+				o.hidden = !on;
+				if (on) n++;
+			}
+			count.textContent = `generated · ${n} of ${outs.length} lines`;
+		};
+		root.addEventListener('change', (e) => {
+			const t = e.target as HTMLInputElement;
+			// feature model constraint: Payments requires Account
+			if (t.name === 'Payments' && t.checked) byName('Account').checked = true;
+			if (t.name === 'Account' && !t.checked && byName('Payments').checked) {
+				byName('Payments').checked = false;
+				hint.textContent = '// unchecked: needs Account';
+			} else hint.textContent = '// requires Account';
+			render();
+		});
+		render();
+	}
+</script>

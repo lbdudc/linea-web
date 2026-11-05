@@ -1,0 +1,108 @@
+@import './tokens.css';
+
+/* Starlight toma los colores y la tipografía de LINEA */
+:root,
+:root[data-theme='dark'] {
+	--sl-font: var(--ln-font);
+	--sl-font-mono: var(--ln-mono);
+	--sl-color-bg: var(--ln-ground);
+	--sl-color-bg-nav: var(--ln-ground);
+	--sl-color-bg-sidebar: var(--ln-ground);
+	--sl-color-bg-inline-code: var(--ln-raised);
+	--sl-color-hairline: var(--ln-border);
+	--sl-color-hairline-light: var(--ln-border);
+	--sl-color-hairline-shade: var(--ln-border);
+	--sl-color-white: var(--ln-text);
+	--sl-color-gray-1: var(--ln-text);
+	--sl-color-gray-2: var(--ln-body);
+	--sl-color-gray-3: var(--ln-muted);
+	--sl-color-gray-4: var(--ln-faint);
+	--sl-color-gray-5: var(--ln-border);
+	--sl-color-gray-6: var(--ln-card);
+	--sl-color-black: var(--ln-ground);
+	--sl-color-text: var(--ln-body);
+	--sl-color-text-accent: var(--ln-primary);
+	--sl-color-accent: var(--ln-button);
+	--sl-color-accent-high: var(--ln-primary);
+	--sl-color-accent-low: #172554;
+}
+:root[data-theme='light'] {
+	--sl-color-white: #1e293b;
+	--sl-color-gray-1: #1e293b;
+	--sl-color-gray-2: #334155;
+	--sl-color-gray-3: #475569;
+	--sl-color-gray-4: #94a3b8;
+	--sl-color-gray-5: #e2e8f0;
+	--sl-color-gray-6: #eef2f7;
+	--sl-color-gray-7: #ffffff;
+	--sl-color-black: #ffffff;
+	--sl-color-bg: #f5f7fa;
+	--sl-color-bg-nav: #f5f7fa;
+	--sl-color-bg-sidebar: #f5f7fa;
+	--sl-color-text: #334155;
+	--sl-color-text-accent: #222261;
+	--sl-color-accent: #2563eb;
+	--sl-color-accent-high: #222261;
+	--sl-color-accent-low: #dbe7ff;
+}
+
+body { font-feature-settings: 'kern', 'liga'; }
+.site-title { font-weight: 600; letter-spacing: 0.14em; }
+.sl-markdown-content h1, .sl-markdown-content h2, .sl-markdown-content h3 { font-weight: 600; letter-spacing: -0.01em; }
+.sl-markdown-content :not(a, strong, em, del, span, input, code, br) + :not(a, strong, em, del, span, input, code, br, :where(.not-content *)) { margin-top: 1.1rem; }
+.sl-markdown-content table { border-collapse: collapse; }
+.sl-markdown-content th { color: var(--ln-text); font-weight: 600; }
+.sl-markdown-content th, .sl-markdown-content td { border-color: var(--ln-border); }
+header.header { backdrop-filter: blur(10px); }
+.sidebar-content a[aria-current='page'] { background: var(--ln-highlight); color: var(--ln-primary); }
+.expressive-code { --ec-brdRad: 8px; }
+.mermaid { margin-block: 1.5rem; }
+
+/* no right-hand "On this page" column: let the content breathe */
+@media (min-width: 72rem) {
+	:root { --sl-content-width: 50rem; }
+}
+
+/* mermaid diagrams: same palette as the landing diagrams */
+.mermaid svg{font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif!important}
+.mermaid .node rect,.mermaid .node polygon,.mermaid .node circle,.mermaid .node path,.mermaid .cluster rect,.mermaid .actor{fill:color-mix(in srgb,var(--c-blue) 9%,var(--ln-card))!important;stroke:color-mix(in srgb,var(--c-blue) 60%,transparent)!important;stroke-width:1.5px!important}
+.mermaid .node .label,.mermaid .nodeLabel,.mermaid .label text,.mermaid text,.mermaid .messageText,.mermaid .actor text{fill:var(--ln-text)!important;color:var(--ln-text)!important;font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif!important}
+.mermaid .edgePath path,.mermaid .flowchart-link,.mermaid .messageLine0,.mermaid .messageLine1{stroke:var(--c-blue)!important;stroke-width:2px!important}
+.mermaid marker path,.mermaid .arrowheadPath{fill:var(--c-blue)!important;stroke:var(--c-blue)!important}
+.mermaid .edgeLabel,.mermaid .edgeLabel rect,.mermaid .labelBkg{background-color:var(--ln-card)!important;fill:var(--ln-card)!important;color:var(--ln-muted)!important}
+.mermaid .edgeLabel span,.mermaid .edgeLabel p{color:var(--ln-muted)!important}
+.mermaid .cluster text{fill:var(--ln-muted)!important}
+.mermaid .node rect,.mermaid .cluster rect,.mermaid .actor,.mermaid .labelBkg{rx:12px;ry:12px}
+.mermaid .cluster rect{fill:color-mix(in srgb,var(--c-blue) 4%,var(--ln-ground))!important;stroke-dasharray:6 6}
+.mermaid .edgeLabel{border-radius:8px}
+.mermaid .note{fill:color-mix(in srgb,var(--c-amber) 14%,var(--ln-card))!important;stroke:var(--c-amber)!important}
+.mermaid .commit-bullets circle,.mermaid .commit,.mermaid circle.commit{stroke-width:2.5px!important}
+
+/* callouts (Aside, Badge) use the site palette in both themes */
+:root,
+:root[data-theme='dark'] {
+	--sl-color-blue-high: #bcd3ff;   --sl-color-blue: #4f8ff7;   --sl-color-blue-low: #112240;
+	--sl-color-purple-high: #ddd1ff; --sl-color-purple: #a78bfa; --sl-color-purple-low: #221a46;
+	--sl-color-orange-high: #fde7a8; --sl-color-orange: #fbbf24; --sl-color-orange-low: #382a0b;
+	--sl-color-red-high: #fecaca;    --sl-color-red: #f87171;    --sl-color-red-low: #3a1515;
+	--sl-color-green-high: #bbf7d0;  --sl-color-green: #34d399;  --sl-color-green-low: #0f2e24;
+}
+:root[data-theme='light'] {
+	--sl-color-blue-high: #1e3a8a;   --sl-color-blue: #2563eb;   --sl-color-blue-low: #e7efff;
+	--sl-color-purple-high: #4c1d95; --sl-color-purple: #7c3aed; --sl-color-purple-low: #f0eaff;
+	--sl-color-orange-high: #7c2d12; --sl-color-orange: #d97706; --sl-color-orange-low: #fff3dc;
+	--sl-color-red-high: #7f1d1d;    --sl-color-red: #dc2626;    --sl-color-red-low: #fde8e8;
+	--sl-color-green-high: #064e3b;  --sl-color-green: #059669;  --sl-color-green-low: #dcfaee;
+}
+.starlight-aside { border-radius: 12px; border-width: 1px; border-style: solid; border-inline-start-width: 4px; }
+
+/* git graph: keep branch labels white on their coloured pills, commit labels muted */
+.mermaid [class*='branch-label'],.mermaid [class*='branch-label'] tspan{fill:#fff!important;color:#fff!important}
+.mermaid .commit-label{fill:var(--ln-muted)!important}
+.mermaid .tag-label{fill:#fff!important}
+
+/* wide tables scroll instead of overflowing; long code in cells wraps */
+.sl-markdown-content table { display: block; max-width: 100%; overflow-x: auto; }
+.sl-markdown-content td code, .sl-markdown-content th code { overflow-wrap: break-word; word-break: normal; }
+
+.sl-markdown-content code.nw { white-space: nowrap; }

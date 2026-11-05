@@ -1,0 +1,69 @@
+---
+import Icon from '../Icon.astro';
+---
+<svg class="dg" viewBox="0 0 1000 400" role="img" aria-label="The browser talks to the LINEA server, which stores accounts and history in MongoDB and keeps lines, products and the registry in a git server; plugins attach to the server">
+	<!-- browser -->
+	<g class="cb">
+		<rect class="nd" x="20" y="130" width="190" height="130" rx="18" filter="url(#f-shadow)" />
+		<circle class="nd-badge" cx="62" cy="172" r="19" />
+		<g class="nd-ico" transform="translate(48 158)"><Icon name="monitor" size={28} /></g>
+		<text class="dg-title dg-title--s" x="92" y="168">Browser</text>
+		<text class="dg-sub" x="92" y="188">Vue web client</text>
+		<text class="dg-sub" x="40" y="224">model editors · diagrams</text>
+	</g>
+
+	<!-- server -->
+	<g>
+		<rect x="320" y="100" width="250" height="190" rx="20" fill="url(#g-core)" filter="url(#f-glow)" />
+		<g class="nd-ico" transform="translate(344 124)"><Icon name="cog" size={30} /></g>
+		<text x="386" y="146" class="dg-core-t">LINEA server</text>
+		<text x="344" y="188" class="dg-core-s">Node.js · Express</text>
+		<text x="344" y="212" class="dg-core-s">engine · generation · REST</text>
+		<text x="344" y="236" class="dg-core-s">no network in the core</text>
+		<text x="344" y="260" class="dg-core-s">plugins on demand</text>
+	</g>
+
+	<!-- mongo -->
+	<g class="cg">
+		<rect class="nd" x="680" y="20" width="300" height="110" rx="18" filter="url(#f-shadow)" />
+		<circle class="nd-badge" cx="720" cy="60" r="19" />
+		<g class="nd-ico" transform="translate(706 46)"><Icon name="db" size={28} /></g>
+		<text class="dg-title dg-title--s" x="752" y="56">MongoDB</text>
+		<text class="dg-sub" x="752" y="76">accounts · settings</text>
+		<text class="dg-sub" x="700" y="106">index of lines and products</text>
+	</g>
+
+	<!-- git -->
+	<g class="cv">
+		<rect class="nd" x="680" y="170" width="300" height="190" rx="18" filter="url(#f-shadow)" />
+		<circle class="nd-badge" cx="720" cy="210" r="19" />
+		<g class="nd-ico" transform="translate(706 196)"><Icon name="branch" size={28} /></g>
+		<text class="dg-title dg-title--s" x="752" y="206">Git server</text>
+		<text class="dg-sub" x="752" y="226">source of truth</text>
+		<text class="dg-sub" x="700" y="262">lines · products · models · registry</text>
+		<g class="dg-feat2"><rect x="700" y="290" width="82" height="30" rx="15" /><text x="741" y="310" text-anchor="middle">local</text></g>
+		<g class="dg-feat2"><rect x="792" y="290" width="82" height="30" rx="15" /><text x="833" y="310" text-anchor="middle">GitLab</text></g>
+		<g class="dg-feat2"><rect x="884" y="290" width="82" height="30" rx="15" /><text x="925" y="310" text-anchor="middle">GitHub</text></g>
+	</g>
+
+	<!-- plugins -->
+	<g class="ca">
+		<rect class="nd nd--dash" x="320" y="326" width="250" height="56" rx="14" />
+		<g class="nd-ico2" transform="translate(340 340)"><Icon name="plug" size={26} /></g>
+		<text class="dg-sub dg-sub--strong" x="380" y="360">Plugins · analytics · agents</text>
+	</g>
+	<path class="dg-flow2 dg-flow2--faint" d="M445 290 V324" />
+
+	<!-- flows + particles -->
+	{[
+		'M212 195 H318',
+		'M570 150 C625 150 625 75 678 75',
+		'M570 240 C625 240 625 265 678 265',
+	].map((d, i) => (
+		<g>
+			<path class="dg-flow2" d={d} marker-end="url(#m-arr)" />
+			<circle class="dg-dot2" r="5"><animateMotion dur="2.6s" begin={`${i * 0.5}s`} repeatCount="indefinite" path={d} /></circle>
+			<circle class="dg-dot2" r="5"><animateMotion dur="2.6s" begin={`${i * 0.5 + 1.3}s`} repeatCount="indefinite" path={d} /></circle>
+		</g>
+	))}
+</svg>

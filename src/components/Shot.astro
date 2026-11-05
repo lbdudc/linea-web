@@ -1,0 +1,17 @@
+---
+// App screenshot that follows the site theme: <name>-dark.jpg / <name>-light.jpg in src/assets/screens.
+import { Image } from 'astro:assets';
+interface Props { name: string; alt: string; ratio?: string; eager?: boolean; sizes?: string; class?: string }
+const { name, alt, ratio, eager = false, sizes = '(min-width: 1200px) 1180px, 100vw', class: cls } = Astro.props;
+const files = import.meta.glob<{ default: ImageMetadata }>('../assets/screens/*.jpg', { eager: true });
+const get = (t: string) => {
+	const f = files[`../assets/screens/${name}-${t}.jpg`];
+	if (!f) throw new Error(`Missing screenshot ${name}-${t}.jpg`);
+	return f.default;
+};
+const style = ratio ? `--shot-ratio:${ratio}` : undefined;
+---
+<div class:list={['shot', cls]} style={style}>
+	<Image class="th-dark" src={get('dark')} alt={alt} widths={[760, 1180, 1456]} sizes={sizes} loading={eager ? 'eager' : 'lazy'} />
+	<Image class="th-light" src={get('light')} alt="" aria-hidden="true" widths={[760, 1180, 1456]} sizes={sizes} loading="lazy" />
+</div>

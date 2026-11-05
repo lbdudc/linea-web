@@ -1,0 +1,143 @@
+---
+title: Connect GitHub
+description: Create a GitHub OAuth App and connect LINEA to GitHub.com or GitHub Enterprise Server, step by step.
+sidebar:
+  order: 5
+---
+
+import { Steps, Tabs, TabItem, Aside, Badge } from '@astrojs/starlight/components';
+
+LINEA signs people in with a **GitHub OAuth App** and then works with their own token. Because GitHub has no nested groups, LINEA models a line and its products as **separate repositories** that it links with a topic.
+
+<Badge text="Needs about 10 minutes" variant="note" />
+
+## How lines and products map to GitHub
+
+| In LINEA | On GitHub |
+|---|---|
+| Line | A repository in the user's account or organisation |
+| Product | Its own repository, named `<line>-<product>`, in the same account |
+| The link between them | A repository **topic**, `linea-in-<id of the line's repository>` |
+| Deleting a line | Deletes the line repository **and every repository with that topic** |
+
+Two consequences to know about:
+
+- The repository name only has to be **unique in the account**; the link to the line is the topic, never the name.
+- Access is per repository. Someone added only to the line's repository is **not** added to its products. Manage access through an **organisation team** or the organisation's base permission.
+
+## 1. Create the OAuth App in GitHub
+
+<Steps>
+
+1. Open **Settings → Developer settings → OAuth Apps → New OAuth App**. To own it by an organisation, use **Organization settings → Developer settings** instead.
+
+2. Fill the form:
+
+   | Field | Value |
+   |---|---|
+   | **Application name** | `LINEA` |
+   | **Homepage URL** | `https://linea.example.com`, the address of LINEA |
+   | **Authorization callback URL** | `https://linea.example.com/login`. Must match `REDIRECT_URI` + `/login` exactly |
+
+3. Click **Register application**, then **Generate a new client secret**. Copy the **Client ID** and the **Client secret**. The secret is shown once.
+
+</Steps>
+
+LINEA asks GitHub for these scopes, so you do not set them in the app:
+
+| Scope | Why |
+|---|---|
+| `repo` | Create and read lines and products |
+| `delete_repo` | Delete a line or product |
+| `read:org` | List the organisations people can create in |
+| `write:repo_hook` | Register push webhooks |
+
+<Aside type="caution" title="Organisations with app restrictions">
+If your organisation restricts third-party applications, an **organisation owner must approve** the LINEA OAuth App (**Settings → Third-party access**), or people will not see the organisation's repositories.
+</Aside>
+
+## 2. Give LINEA the credentials
+
+<Steps>
+
+1. Add the values to `linea/server/.env`:
+
+   <Tabs>
+   <TabItem label="GitHub.com">
+
+   ```ini title="server/.env"
+   JWT_SIGN_KEY=<output of: openssl rand -hex 32>
+
+   GITHUB_CLIENT_ID=<Client ID>
+   GITHUB_CLIENT_SECRET=<Client secret>
+
+   REDIRECT_URI=https://linea.example.com
+   ADMIN_USERS=your-github-login
+   ```
+
+   </TabItem>
+   <TabItem label="GitHub Enterprise Server">
+
+   ```ini title="server/.env"
+   JWT_SIGN_KEY=<output of: openssl rand -hex 32>
+
+   GITHUB_URL=https://ghe.example.com
+   GITHUB_API_URL=https://ghe.example.com/api/v3
+   GITHUB_WEB_IDE_URL=https://ghe.example.com
+   GITHUB_CLIENT_ID=<Client ID>
+   GITHUB_CLIENT_SECRET=<Client secret>
+
+   REDIRECT_URI=https://linea.example.com
+   ADMIN_USERS=your-github-login
+   ```
+
+   </TabItem>
+   </Tabs>
+
+2. *(Optional)* Declare the host in `linea.config.yml` so it is locked and survives a wiped database:
+
+   ```yaml title="deploy/config/linea.config.yml"
+   gitHosts:
+     primary: github
+     github:
+       clientId: ${GITHUB_CLIENT_ID}
+       clientSecret: ${GITHUB_CLIENT_SECRET}
+   ```
+
+3. **Restart** the server.
+
+   ```bash
+   docker compose up -d --force-recreate server
+   ```
+
+</Steps>
+
+## 3. Sign in and verify
+
+<Steps>
+
+1. Open LINEA and click **Sign in with GitHub**. Authorise the application.
+2. In **Configuration → Git hosts**, check that GitHub is active.
+3. Create a line. In GitHub you should see a new repository with the line name.
+4. Create a product. A second repository `<line>-<product>` appears with the `linea-in-…` topic.
+
+</Steps>
+
+## Good to know
+
+- **Tokens do not expire** with an OAuth App, so there is no refresh step. A GitHub App gives expiring tokens and finer permissions; LINEA currently documents the OAuth App route.
+- **Rate limits**: 5,000 requests an hour per user token, plus limits on bursts of writes. LINEA caches reads, uses conditional requests, writes one thing at a time and honours `Retry-After`.
+- **Merge requests are pull requests.** Branch protection that blocks a merge is reported as an error, not as conflicts.
+- **Generated CI** is a GitHub Actions workflow with the same two jobs as on GitLab.
+- **Push webhooks** are verified with `X-Hub-Signature-256`. See [Webhooks and events](/configure/webhooks-and-events/).
+
+## Common problems
+
+| Symptom | Likely cause and fix |
+|---|---|
+| *The redirect_uri is not associated with this application* | The callback URL differs from `REDIRECT_URI` + `/login`. |
+| Organisations are missing from the creation form | The app is not approved by the organisation, or `read:org` was refused. |
+| `404` when creating a product | The person lacks permission to create repositories in that account. |
+| Line deleted but a product repository remains | Its `linea-in-<id>` topic was edited by hand. |
+
+More in [Troubleshooting](/configure/troubleshooting/).

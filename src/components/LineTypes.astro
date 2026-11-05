@@ -1,0 +1,237 @@
+---
+import Icon from './Icon.astro';
+const types = [
+	{
+		id: 'plain', icon: 'file', name: 'Simple SPL', kind: 'plain',
+		blurb: 'One repository with a feature model and your own platform code.',
+		text: 'The classic product line. You edit the feature model by hand and write the platform: annotated code, plus the scripts that complete the specification. LINEA derives each product from them.',
+		write: ['The feature model', 'Annotated platform code', 'extra.js and transformation.js'],
+		linea: ['Derives code for the selected features', 'Opens update merge requests'],
+		when: 'Learning, trials and small lines.',
+		uvl: 'features\n    Shop\n        mandatory\n            Catalog\n        optional\n            Account\n            Maps',
+		uvlTitle: 'You write the feature model (UVL)',
+	},
+	{
+		id: 'project', icon: 'layers', name: 'Project with metamodels', kind: 'project',
+		blurb: 'A simple SPL plus the metamodels you choose.',
+		text: 'Everything in a simple SPL, plus metamodels such as the data model, forms or GUI. Each product describes those parts as models, edited as text, form or diagram, and your templates read them.',
+		write: ['Platform code and scripts', 'The models of each product'],
+		linea: ['Validates the models with the metamodels', 'Hands them to your templates as spec.models'],
+		when: 'Your own models, without modules.',
+		uvl: 'entity Road {\n    property name: String required pk\n}',
+		uvlTitle: 'And models per product (datamodel)',
+	},
+	{
+		id: 'modular', icon: 'puzzle', name: 'Modular', kind: 'modular', recommended: true,
+		blurb: 'Composed from modules in the registry. Nothing to write.',
+		text: 'Pick reusable modules and LINEA composes the line for you: feature model, code, transformations and metamodels, with versions pinned in a lockfile. The line has no platform code of its own.',
+		write: ['A list of modules and version ranges'],
+		linea: ['Resolves versions and dependencies', 'Composes feature model, code and scripts', 'Pins everything in linea.lock.json'],
+		when: 'Reusing functionality across lines. The recommended option.',
+		uvl: 'features\n    FieldService\n        mandatory\n            WebApplication\n                mandatory\n                    Tools\n                        optional\n                            T_Swagger',
+		uvlTitle: 'LINEA composes the feature model (UVL)',
+	},
+];
+---
+<div class="lt" id="lt">
+	<div class="lt__tabs" role="tablist" aria-label="Types of line">
+		{types.map((t, i) => (
+			<button type="button" role="tab" id={`lt-tab-${t.id}`} aria-controls={`lt-pane-${t.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>
+				<span class="lt__ico"><Icon name={t.icon} size={20} /></span>
+				<span class="lt__name"><b>{t.name}</b><small>{t.blurb}</small></span>
+				{t.recommended && <span class="lt__badge">Recommended</span>}
+			</button>
+		))}
+	</div>
+
+	{types.map((t, i) => (
+		<div class="lt__pane" role="tabpanel" id={`lt-pane-${t.id}`} aria-labelledby={`lt-tab-${t.id}`} hidden={i !== 0}>
+			<div class="lt__text">
+				<h3>{t.name} <code>kind: {t.kind}</code></h3>
+				<p>{t.text}</p>
+				<div class="lt__cols">
+					<div><h4><Icon name="user" size={15} /> You provide</h4><ul>{t.write.map((w) => <li>{w}</li>)}</ul></div>
+					<div><h4><Icon name="sparkle" size={15} /> LINEA does</h4><ul>{t.linea.map((w) => <li>{w}</li>)}</ul></div>
+				</div>
+				<div class="lt__uvl"><span class="lt__uvl-t">{t.uvlTitle}</span><pre><code>{t.uvl}</code></pre></div>
+				<p class="lt__when"><Icon name="check" size={16} /><span><b>Use it for:</b> {t.when}</span></p>
+			</div>
+
+			<div class="lt__dia">
+				{t.id === 'plain' && (
+					<svg class="dg" viewBox="0 0 800 440" role="img" aria-label="A simple SPL: the repository holds the feature model and platform code; with a feature selection LINEA derives the product">
+						<g class="cb">
+							<rect class="nd" x="10" y="10" width="270" height="420" rx="18" filter="url(#f-shadow)" />
+							<circle class="nd-badge" cx="46" cy="48" r="17" /><g class="nd-ico" transform="translate(34 36)"><Icon name="layers" size={24} /></g>
+							<text class="dg-title dg-title--s" x="74" y="46">SPL repository</text><text class="dg-sub" x="74" y="66">kind: plain</text>
+						</g>
+						<g class="dg-chip2 cb"><rect x="26" y="86" width="238" height="38" rx="10" /><rect class="bar" x="26" y="86" width="5" height="38" rx="2.5" /><text x="44" y="110">spl.json</text></g>
+						<g class="dg-chip2 cc"><rect x="26" y="132" width="238" height="38" rx="10" /><rect class="bar" x="26" y="132" width="5" height="38" rx="2.5" /><text x="44" y="156">feature model</text><text x="252" y="156" text-anchor="end" class="dg-tag">you edit</text></g>
+						<g class="cv">
+							<rect class="nd" x="26" y="184" width="238" height="232" rx="14" />
+							<text class="dg-lane" x="42" y="210">src/platform/</text>
+						</g>
+						{['config.json', 'code/', 'extra.js', 'transformation.js', 'ci/ pipelines'].map((n, i) => (
+							<g class="dg-chip2 cv"><rect x="40" y={222 + i * 38} width="210" height="32" rx="9" /><rect class="bar" x="40" y={222 + i * 38} width="4" height="32" rx="2" /><text x="56" y={243 + i * 38}>{n}</text>{n === 'code/' && <text x="238" y={243 + i * 38} text-anchor="end" class="dg-tag">annotated</text>}</g>
+						))}
+
+						<g class="cc">
+							<rect class="nd" x="330" y="10" width="200" height="124" rx="16" filter="url(#f-shadow)" />
+							<circle class="nd-badge" cx="364" cy="46" r="15" /><g class="nd-ico" transform="translate(353 35)"><Icon name="check" size={22} /></g>
+							<text class="dg-title dg-title--s" x="388" y="52" style="font-size:15px">Feature selection</text>
+							<text class="dg-sub" x="348" y="82">per product</text>
+							<g class="dg-feat2"><rect x="348" y="94" width="70" height="26" rx="13" /><text x="383" y="111" text-anchor="middle">Users</text></g>
+							<g class="dg-feat2"><rect x="426" y="94" width="70" height="26" rx="13" /><text x="461" y="111" text-anchor="middle">Maps</text></g>
+						</g>
+
+						<g class="dg-hub">
+							<circle class="ring r1" cx="430" cy="270" r="46" /><circle class="ring r2" cx="430" cy="270" r="46" />
+							<circle cx="430" cy="270" r="42" fill="url(#g-core)" filter="url(#f-glow)" />
+							<g class="nd-ico" transform="translate(416 256)" style="color:#fff"><Icon name="cog" size={28} /></g>
+							<text x="430" y="338" text-anchor="middle" class="dg-title dg-title--s">LINEA</text>
+							<text x="430" y="356" text-anchor="middle" class="dg-sub">derive</text>
+						</g>
+
+						{['M430 136 V224', 'M282 330 C340 330 340 285 386 285', 'M474 270 H584'].map((d, i) => (
+							<g><path class="dg-flow2" d={d} marker-end="url(#m-arr)" /><circle class="dg-dot2" r="4.5"><animateMotion dur="2.6s" begin={`${i * 0.6}s`} repeatCount="indefinite" path={d} /></circle></g>
+						))}
+
+						<g class="cg">
+							<rect class="nd" x="590" y="130" width="200" height="260" rx="18" filter="url(#f-shadow)" />
+							<circle class="nd-badge" cx="626" cy="168" r="17" /><g class="nd-ico" transform="translate(614 156)"><Icon name="package" size={24} /></g>
+							<text class="dg-title dg-title--s" x="654" y="166">NorthRegion</text><text class="dg-sub" x="654" y="186">own repository</text>
+						</g>
+						{['src/ (generated)', '.linea/spec.json', '.linea/models/'].map((n, i) => (
+							<g class="dg-chip2 cg"><rect x="606" y={210 + i * 42} width="168" height="34" rx="9" /><rect class="bar" x="606" y={210 + i * 42} width="4" height="34" rx="2" /><text x="622" y={232 + i * 42}>{n}</text></g>
+						))}
+						<text class="dg-sub" x="608" y="360">branches: bigbang, main</text>
+					</svg>
+				)}
+
+				{t.id === 'project' && (
+					<svg class="dg" viewBox="0 0 800 440" role="img" aria-label="A project line: platform code plus metamodels; each product holds models that LINEA validates and hands to the templates">
+						<g class="cb">
+							<rect class="nd" x="10" y="10" width="226" height="420" rx="18" filter="url(#f-shadow)" />
+							<circle class="nd-badge" cx="46" cy="48" r="17" /><g class="nd-ico" transform="translate(34 36)"><Icon name="layers" size={24} /></g>
+							<text class="dg-title dg-title--s" x="74" y="46">SPL repository</text><text class="dg-sub" x="74" y="66">kind: project</text>
+						</g>
+						<g class="dg-chip2 cb"><rect x="26" y="86" width="194" height="34" rx="10" /><rect class="bar" x="26" y="86" width="5" height="34" rx="2.5" /><text x="44" y="108">spl.json</text></g>
+						<g class="dg-chip2 cb"><rect x="26" y="126" width="194" height="34" rx="10" /><rect class="bar" x="26" y="126" width="5" height="34" rx="2.5" /><text x="44" y="148">linea.lock.json</text></g>
+						<text class="dg-sub" x="28" y="186">metamodels you chose</text>
+						<g class="dg-feat2 cc"><rect x="26" y="196" width="88" height="26" rx="13" /><text x="70" y="213" text-anchor="middle">datamodel</text></g>
+						<g class="dg-feat2 cc"><rect x="120" y="196" width="56" height="26" rx="13" /><text x="148" y="213" text-anchor="middle">forms</text></g>
+						<g class="dg-feat2 cc"><rect x="182" y="196" width="38" height="26" rx="13" /><text x="201" y="213" text-anchor="middle">…</text></g>
+						<g class="cv"><rect class="nd" x="26" y="238" width="194" height="178" rx="14" /><text class="dg-lane" x="42" y="262">src/platform/</text></g>
+						{['code/ (annotated)', 'extra.js', 'transformation.js', 'config.json'].map((n, i) => (
+							<g class="dg-chip2 cv"><rect x="38" y={274 + i * 34} width="170" height="28" rx="8" /><rect class="bar" x="38" y={274 + i * 34} width="4" height="28" rx="2" /><text x="52" y={293 + i * 34} style="font-size:13px">{n}</text></g>
+						))}
+
+						<text class="dg-lane" x="262" y="30">Product models</text>
+						{[{ n: 'datamodel', c: 'cc', l1: 'entity Road {', l2: '  name: String', l3: '}' }, { n: 'forms', c: 'cv', l1: 'form RoadForm', l2: '  for Road', l3: '' }, { n: 'featureselection', c: 'cg', l1: 'Users, Maps', l2: '', l3: '' }].map((m, i) => (
+							<g class={m.c}>
+								<rect class="nd" x="260" y={44 + i * 128} width="214" height="112" rx="14" filter="url(#f-shadow)" />
+								<circle class="nd-badge" cx="284" cy={72 + i * 128} r="11" />
+								<text class="dg-title dg-title--s" x="304" y={78 + i * 128}>{m.n}</text>
+								<text class="dg-code" x="278" y={104 + i * 128} xml:space="preserve">{m.l1}</text>
+								<text class="dg-code" x="278" y={122 + i * 128} xml:space="preserve">{m.l2}</text>
+								<text class="dg-code" x="278" y={140 + i * 128} xml:space="preserve">{m.l3}</text>
+							</g>
+						))}
+
+						<g class="dg-hub">
+							<circle class="ring r1" cx="580" cy="226" r="46" /><circle class="ring r2" cx="580" cy="226" r="46" />
+							<circle cx="580" cy="226" r="42" fill="url(#g-core)" filter="url(#f-glow)" />
+							<g class="nd-ico" transform="translate(566 212)" style="color:#fff"><Icon name="cog" size={28} /></g>
+							<text x="580" y="294" text-anchor="middle" class="dg-title dg-title--s">LINEA</text>
+							<text x="580" y="312" text-anchor="middle" class="dg-sub">derive</text>
+						</g>
+						{['M476 226 H534', 'M222 410 H580 V272', 'M624 226 H676'].map((d, i) => (
+							<g><path class="dg-flow2" d={d} marker-end="url(#m-arr)" /><circle class="dg-dot2" r="4.5"><animateMotion dur="3s" begin={`${i * 0.7}s`} repeatCount="indefinite" path={d} /></circle></g>
+						))}
+
+						<g class="cg">
+							<rect class="nd" x="678" y="126" width="112" height="200" rx="16" filter="url(#f-shadow)" />
+							<circle class="nd-badge" cx="708" cy="158" r="14" /><g class="nd-ico" transform="translate(697 147)"><Icon name="package" size={22} /></g>
+							<text class="dg-title dg-title--s" x="728" y="164" style="font-size:14px">Product</text>
+						</g>
+						{['src/', 'models/', '.linea/'].map((n, i) => (
+							<g class="dg-chip2 cg"><rect x="690" y={184 + i * 44} width="88" height="34" rx="9" /><rect class="bar" x="690" y={184 + i * 44} width="4" height="34" rx="2" /><text x="704" y={206 + i * 44}>{n}</text></g>
+						))}
+					</svg>
+				)}
+
+				{t.id === 'modular' && (
+					<svg class="dg" viewBox="0 0 800 440" role="img" aria-label="A modular line: modules from the registry are composed into the line, which then generates products">
+						<g class="cb">
+							<rect class="nd" x="10" y="10" width="196" height="420" rx="18" filter="url(#f-shadow)" />
+							<circle class="nd-badge" cx="44" cy="46" r="16" /><g class="nd-ico" transform="translate(33 35)"><Icon name="box" size={22} /></g>
+							<text class="dg-title dg-title--s" x="70" y="52">Registry</text>
+						</g>
+						{[{ n: 'main-component', c: 'cb' }, { n: 'user-management', c: 'cv' }, { n: 'map-viewer', c: 'cc' }, { n: 'data-browser', c: 'ca' }].map((m, i) => (
+							<g class={`dg-chip2 ${m.c}`}><rect x="24" y={80 + i * 46} width="168" height="36" rx="10" /><rect class="bar" x="24" y={80 + i * 46} width="5" height="36" rx="2.5" /><text x="40" y={103 + i * 46} style="font-size:13px">{m.n}</text></g>
+						))}
+						<text class="dg-sub" x="26" y="288">metamodels they need</text>
+						<g class="dg-feat2 cc"><rect x="24" y="298" width="56" height="26" rx="13" /><text x="52" y="315" text-anchor="middle">basic</text></g>
+						<g class="dg-feat2 cc"><rect x="86" y="298" width="88" height="26" rx="13" /><text x="130" y="315" text-anchor="middle">datamodel</text></g>
+						<g class="dg-feat2 cc"><rect x="24" y="330" width="80" height="26" rx="13" /><text x="64" y="347" text-anchor="middle">gismodel</text></g>
+
+						{['M208 220 H252', 'M494 220 H532', 'M672 200 C690 200 690 110 712 110', 'M672 220 H710', 'M672 240 C690 240 690 330 712 330'].map((d, i) => (
+							<g><path class="dg-flow2" d={d} marker-end="url(#m-arr)" /><circle class="dg-dot2" r="4.5"><animateMotion dur="2.8s" begin={`${i * 0.4}s`} repeatCount="indefinite" path={d} /></circle></g>
+						))}
+
+						<g class="cv">
+							<rect class="nd" x="254" y="40" width="240" height="360" rx="18" filter="url(#f-shadow)" />
+							<circle class="nd-badge" cx="288" cy="76" r="16" /><g class="nd-ico" transform="translate(277 65)"><Icon name="puzzle" size={22} /></g>
+							<text class="dg-title dg-title--s" x="314" y="74">Composition</text><text class="dg-sub" x="314" y="94">checked on every change</text>
+						</g>
+						{['Resolve versions', 'Pin in linea.lock.json', 'Graft feature models', 'Overlay the code', 'Chain the scripts', 'Load the metamodels'].map((row, i) => (
+							<g class="dg-check dg-chip2 cg" style={`--i:${i}`}>
+								<circle cx="286" cy={140 + i * 42} r="11" class="dg-okc" />
+								<path d={`M281 ${140 + i * 42}l3.6 3.6 6.4-6.8`} class="dg-ok-tick" />
+								<text x="308" y={145 + i * 42}>{row}</text>
+							</g>
+						))}
+
+						<g class="cg">
+							<rect class="nd" x="534" y="120" width="138" height="200" rx="18" filter="url(#f-shadow)" />
+							<circle class="nd-badge" cx="566" cy="154" r="15" /><g class="nd-ico" transform="translate(555 143)"><Icon name="layers" size={22} /></g>
+							<text class="dg-title dg-title--s" x="588" y="152" style="font-size:13px">FieldService</text><text class="dg-sub" x="590" y="170">modular</text>
+						</g>
+						<g class="dg-chip2 cg"><rect x="546" y="192" width="114" height="30" rx="8" /><rect class="bar" x="546" y="192" width="4" height="30" rx="2" /><text x="558" y="212" style="font-size:12px">spl.json</text></g>
+						<g class="dg-chip2 cg"><rect x="546" y="228" width="114" height="30" rx="8" /><rect class="bar" x="546" y="228" width="4" height="30" rx="2" /><text x="558" y="248" style="font-size:12px">linea.lock</text></g>
+						<text class="dg-sub" x="548" y="288">no platform code</text>
+						<text class="dg-sub" x="548" y="304">of its own</text>
+
+						{[{ n: 'North', y: 80, c: 'cv' }, { n: 'South', y: 190, c: 'cc' }, { n: 'Coastal', y: 300, c: 'cg' }].map((p) => (
+							<g class={`dg-prod ${p.c}`}>
+								<rect class="nd" x="712" y={p.y} width="80" height="60" rx="12" filter="url(#f-shadow)" />
+								<g class="nd-ico2" transform={`translate(742 ${p.y + 8})`}><Icon name="package" size={20} /></g>
+								<text x="752" y={p.y + 48} text-anchor="middle" style="font-size:12.5px;font-weight:600">{p.n}</text>
+							</g>
+						))}
+					</svg>
+				)}
+			</div>
+		</div>
+	))}
+</div>
+
+<script>
+	const root = document.getElementById('lt');
+	if (root) {
+		const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role=tab]')];
+		const panes = [...root.querySelectorAll<HTMLElement>('[role=tabpanel]')];
+		const show = (i: number, focus = false) => {
+			tabs.forEach((t, j) => { t.setAttribute('aria-selected', String(i === j)); t.tabIndex = i === j ? 0 : -1; });
+			panes.forEach((p, j) => { p.hidden = i !== j; });
+			if (focus) tabs[i].focus();
+		};
+		tabs.forEach((t, i) => {
+			t.addEventListener('click', () => show(i));
+			t.addEventListener('keydown', (e) => {
+				if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); show((i + 1) % tabs.length, true); }
+				if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); show((i - 1 + tabs.length) % tabs.length, true); }
+			});
+		});
+	}
+</script>

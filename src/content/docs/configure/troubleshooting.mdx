@@ -1,0 +1,62 @@
+---
+title: Troubleshooting
+description: "Fixes for the usual sign-in, OAuth, webhook, Docker and generation problems."
+sidebar:
+  order: 11
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Sign-in
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| The page shows an empty card and no sign-in form | The client cannot reach `/api/users/config` | Check the server is up. In development, start the client with the right `API_URL` (see [development stack](/install/development/)) |
+| Sign-in button spins forever after restarting a dev GitLab | Stale browser session | Clear the site's local storage and open the authorize URL directly |
+| *Redirect URI is not valid* (GitLab) / *redirect_uri is not associated* (GitHub) | Registered URL differs from `REDIRECT_URI` + `/login` | Match scheme, host, port and path exactly |
+| `401` after authorising | Wrong client id or secret, or the secret was renewed | Copy them again into `server/.env` and recreate the server |
+| No *Sign in with GitLab/GitHub* button | The host is not switched on | Set `GITLAB_HOSTNAME` or `GITHUB_CLIENT_ID` |
+| `429` on sign-in or `git` | Lockout after wrong passwords | Wait `lockMinutes`, or raise the limits |
+| Everyone was signed out | `JWT_SIGN_KEY` changed | Expected. Keep the key stable |
+
+## Configuration not applied
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| A variable you changed has no effect in Docker | Containers read `env_file` when created | `docker compose up -d --force-recreate server` |
+| A change to `linea.config.yml` has no effect | The file is read only at startup | Restart the server |
+| The server does not start | `LINEA_CONFIG` path missing or invalid YAML | Fix the file. The server refuses to start on purpose |
+| A setting is greyed out | The file declares it | Edit the file, or remove the key |
+| A plugin cannot be enabled | A required setting has no value | Open **Configure** on its card and fill it |
+
+## Git hosts
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Cannot switch a host off (`409`) | It has users or lines | Read the count in the message, then confirm with `force` if you accept it |
+| Line creation fails with a permission error | The person cannot create groups or repositories there | Check their role and `defaultNamespace` |
+| Self-managed GitLab: *unable to verify the first certificate* | Private certificate authority | Set `NODE_EXTRA_CA_CERTS` to the CA file |
+| Modules page is empty | The registry has no packages, or the wrong `REGISTRY_DIR` | Publish them, and point `REGISTRY_DIR` at the folder that **contains** `metamodels/` and `modules/` |
+| A plain line fails with `module_resolution_failed` | Registry not reachable from the primary host | Check `LINEA_REGISTRY` and `LINEA_FEATURE_METAMODEL` |
+
+## Webhooks
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Pushes never reach LINEA | `GIT_WEBHOOK_SECRET` unset, or `PUBLIC_URL` not reachable from the host | Set both. A LINEA on a laptop cannot receive from GitLab.com |
+| Your receiver rejects LINEA's events | Signing over a re-serialised body | Verify `X-Linea-Signature` against the **raw** body |
+| No events at all | `EVENT_WEBHOOK_SECRET` is empty | Set it. Without it nothing is sent |
+
+## Generation
+
+| Symptom | Fix |
+|---|---|
+| *No changes* after an edit | Check the change affects features or models of the product, and that it was saved |
+| Generation fails with *abstract feature cannot be leaf* | The line's feature model is still only its root. Add features to it |
+| Conflicts in the `bigbang → main` request | Resolve on the git host: a manual edit touches a file the generator also changes |
+| *Error reading the specification* | The git server did not answer. Retry |
+| Invalid feature selection | Fix it in the product's **Configuration** tab. See [feature models](/concepts/feature-models/) |
+
+<Aside type="tip" title="Still stuck?">
+Set `LINEA_GIT_TRACE=1` to log one line per call to the git host, which shows where a slow page spends its time. The server log (`docker compose logs server`) carries the error detail; the client only sees a generic message.
+</Aside>

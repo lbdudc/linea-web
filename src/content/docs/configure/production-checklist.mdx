@@ -1,0 +1,51 @@
+---
+title: Production checklist
+description: "What to set, protect and back up before putting LINEA in front of a team."
+sidebar:
+  order: 10
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Work through this list before you open LINEA to other people.
+
+## Secrets
+
+- [ ] **`JWT_SIGN_KEY` is long and random** (`openssl rand -hex 32`) and stored outside git. Changing it later signs everyone out and renews every local git token.
+- [ ] OAuth secrets (`GITLAB_SECRET_ID`, `GITHUB_CLIENT_SECRET`), `GIT_WEBHOOK_SECRET` and `EVENT_WEBHOOK_SECRET` are in `server/.env`, not in `linea.config.yml`. In the file, refer to them as `${NAME}`.
+- [ ] `server/.env` is not in git and not baked into a Docker image (`.dockerignore` already excludes it).
+- [ ] In tests and development, declare hosts explicitly rather than relying on a real `server/.env`.
+
+## Addresses
+
+- [ ] `REDIRECT_URI` is the **public** address with the right scheme, and **no trailing slash or `/login`**.
+- [ ] The same value plus `/login` is registered in the [GitLab](/configure/gitlab-oauth/) or [GitHub](/configure/github-oauth/) OAuth application.
+- [ ] `PUBLIC_SERVER_URL` and, for push webhooks, `PUBLIC_URL` point at the same public address.
+- [ ] **TLS is terminated in front of LINEA** (a reverse proxy or load balancer). Only the proxy port (`PROXY_PORT`) is exposed; never the server's port.
+
+## People
+
+- [ ] `ADMIN_USERS` lists the right people, and on the local host the initial `LINEA_ADMIN_PASSWORD` was changed after first sign-in.
+- [ ] Sign-in limits suit you: see `maxFailedSignIns`, `lockMinutes`, `minPasswordLength` in [instance settings](/configure/instance-settings/).
+- [ ] Behind a proxy, `TRUST_PROXY` is set so lockout counts real client addresses.
+
+## Packages
+
+- [ ] `LINEA_TRUSTED_NAMESPACES` limits where packages may come from. Their scripts run **without isolation**.
+- [ ] `modulesPublish` and `modulesRegister` are `admins` if you want reviewed modules only.
+
+## Data
+
+- [ ] **MongoDB and the repositories are backed up together** when you use the `local` host.
+- [ ] Only **one LINEA process** uses a given `LINEA_REPOS_DIR`.
+- [ ] Docker volumes `mongo-data` and `repos-data` are on storage you trust.
+
+## Operations
+
+- [ ] `NODE_ENV=production` in `.env.prod`.
+- [ ] The server container's access to the Docker socket is accepted as equivalent to root on the host.
+- [ ] You know how to apply changes: **environment** needs `docker compose up -d --force-recreate server`; **`linea.config.yml`** needs a restart.
+
+<Aside type="tip" title="Verify before you announce">
+Sign in with a normal (non-admin) account and check that **Configuration** is not in the menu. Then create a line and a product and generate it end to end.
+</Aside>

@@ -1,0 +1,116 @@
+---
+title: Environment variables
+description: "Every environment variable LINEA reads, grouped by purpose, with defaults."
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Set these in `linea/server/.env` (secrets), in `linea/deploy/.env` or `.env.prod` (Compose settings), or in the `environment:` block of the Compose file. The server reads them **at start**; in Docker, recreate the container after a change (`docker compose up -d --force-recreate server`).
+
+A **Required** of *Yes* means LINEA will not work without it.
+
+## Server
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `JWT_SIGN_KEY` | **Yes** | none | Secret that signs LINEA sessions and derives local git tokens. Changing it signs everyone out |
+| `port` | No | `3000` | Port the server listens on |
+| `mongoUrl` | No | built from `db.*` | Full MongoDB URL. Must point to a replica set, for example `mongodb://mongo:27017/splalm?replicaSet=rs0&directConnection=true` |
+| `NODE_ENV` | No | `development` | Set `production` in deployments |
+| `REDIRECT_URI` | **Yes** for OAuth | none | Public address of the **client**, without a trailing slash and without `/login`. LINEA appends `/login` to get the OAuth redirect |
+| `PUBLIC_SERVER_URL` | No | `http://localhost:<PROXY_PORT>` | Public address of the server |
+| `TRUST_PROXY` | No | `1` | Express `trust proxy`, so sign-in lockout sees real client addresses |
+| `LINEA_MAX_PUSH_MB` | No | built-in | Largest accepted `git push` on the local host |
+| `LINEA_GIT_TRACE` | No | off | `1` logs one line per call to the git host |
+
+## Git hosts
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `GIT_PROVIDER` | No | first configured, else `local` | **Primary** host: `local`, `gitlab` or `github`. It is also switched on |
+| `GITLAB_HOSTNAME` | For GitLab | none | GitLab address, with no trailing slash. Setting it switches GitLab on |
+| `GITLAB_CLIENT_ID` | For GitLab | none | OAuth **Application ID** |
+| `GITLAB_SECRET_ID` | For GitLab | none | OAuth **Secret** |
+| `GITHUB_CLIENT_ID` | For GitHub | none | OAuth App **Client ID**. Setting it switches GitHub on |
+| `GITHUB_CLIENT_SECRET` | For GitHub | none | OAuth App **Client secret** |
+| `GITHUB_URL` | Enterprise | `https://github.com` | Web address of GitHub Enterprise Server |
+| `GITHUB_API_URL` | Enterprise | `https://api.github.com` | API address (for GHES, `https://<host>/api/v3`). `LINEA_GITHUB_API` is an alias |
+| `GITHUB_WEB_IDE_URL` | No | `https://github.dev` | Where *Open in Web IDE* links go |
+| `GITHUB_TOKEN` | No | none | A token for service-side reads |
+| `LINEA_REPOS_DIR` | No | `./.data/repos` | Where the **local** host keeps repositories (a volume in Docker: `/data/repos`) |
+| `LINEA_GIT_URL` | No | `<REDIRECT_URI>/git` | Address the local host's repositories are served at |
+
+## Administrators and accounts
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `ADMIN_USERS` | No | none | Comma-separated usernames who are administrators |
+| `LINEA_ADMIN_PASSWORD` | No | none | Password for administrators in `ADMIN_USERS` that have **no account yet** on the local host (created at start) |
+| `LINEA_SERVICE_KEYS` | No | none | Keys of services that act for people: `id:secret,id:secret` |
+
+## Configuration files
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `LINEA_CONFIG` | No | `/config/linea.config.yml` in Docker, `linea/linea.config.yml` otherwise | Path to the config file. A missing path or invalid YAML stops the server |
+| `LINEA_CONFIG_DIR` | No | `./config` | Docker only: the folder mounted at `/config` |
+| `SERVER_ENV_FILE` | No | `../server/.env` | Docker only: the env file passed to the server |
+
+## Registry and packages
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `LINEA_REGISTRY` | No | none | Repository holding the catalogue (`registry.json`), such as `gitlab:linea/registry` or `local:registry/index`. Unset lists every repo with the topic |
+| `REGISTRY_DIR` | No | parent of `server/` | Folder containing `metamodels/` and `modules/`, published to the local host at start (the Docker image has them in `/srv/registry`) |
+| `LINEA_FEATURE_METAMODEL` | No | `gitlab:linea/metamodels/featuremodel` | Where the feature metamodel that every line has is published |
+| `LINEA_TRUSTED_NAMESPACES` | No | anywhere | Comma-separated GitLab paths or `github:<owner>` packages may come from |
+| `LINEA_GITHUB_OWNERS` | No | none | GitHub users or organisations whose packages are listed even when the deployment is not on GitHub |
+
+## Plugins
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `LINEA_PLUGINS` | No | none | Comma-separated plugin ids to install and enable at start **when nobody has decided yet** |
+| `PLUGINS_DIR` | No | `plugins/` next to `linea/` | Folder of plugins |
+| `FLAMAPY_API_URL` | No | `http://splalm-flamapy:8000` | analytics-plugin: flamapy analysis service. Use `http://127.0.0.1:8000` outside Docker |
+| `AGENTS_URL` | No | `http://host.docker.internal:3001` | agents-plugin: where its service is, for LINEA |
+| `AGENTS_WEB_URL` | No | none | agents-plugin: where it is, for the browser |
+| `AGENTS_SERVICE_KEY` | No | none | agents-plugin: key shared by LINEA and the service |
+
+## Webhooks and events
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `PUBLIC_URL` | For push hooks | none | Address the git hosts reach LINEA at. The hook registered is `PUBLIC_URL/api/webhooks/<host>` |
+| `GIT_WEBHOOK_SECRET` | For push hooks | none | Secret GitLab and GitHub sign push webhooks with. Without it, pushes are refused |
+| `EVENT_WEBHOOK_URLS` | No | none | Comma-separated URLs that receive domain events |
+| `EVENT_WEBHOOK_SECRET` | For events | none | Key for the `X-Linea-Signature` HMAC. Without it **no** event is sent |
+
+## Docker Compose settings
+
+These go in `deploy/.env` or `.env.prod`, not in the server's env file.
+
+| Variable | Default | Description |
+|---|---|---|
+| `PROXY_PORT` | `9000` | The only exposed port |
+| `MONGO_URL` | `mongodb://mongo:27017/splalm?replicaSet=rs0&directConnection=true` | Database address |
+| `API_URL`, `VITE_API_URL` | empty | Build argument for the client's API address. Empty means same origin |
+| `SERVER_PORT` | `3000` | Host port that maps to the server (debugging) |
+
+## Development stack
+
+Used by `npm run dev:up` in `linea/server`.
+
+| Variable | Default | Description |
+|---|---|---|
+| `GIT_HOSTS` | `local` | Hosts to run, comma-separated; the first is primary |
+| `MONGO_PORT`, `SERVER_PORT`, `CLIENT_PORT` | `27017`, `3000`, `9000` | Move these when ports are taken |
+| `GITLAB_PORT`, `GITHUB_PORT` | `8081`, `8082` | Ports of the in-memory hosts |
+| `DEV_DATA` | `.dev-data` | Where logs, MongoDB data and repositories go |
+| `LINEA_CONFIG` | none | Add a `linea.config.yml` to the dev stack |
+
+<Aside type="note" title="Precedence">
+For settings that exist in several places the order is: **`linea.config.yml`** > **Configuration view** > **environment variable** > default. See the [configuration overview](/configure/overview/).
+</Aside>

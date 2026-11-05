@@ -1,0 +1,121 @@
+---
+title: Git hosts
+description: "Choose where lines and products live: the built-in local host, GitLab or GitHub, and how profiles work."
+sidebar:
+  order: 2
+---
+
+import { Card, CardGrid, LinkCard, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Every line and every product is a **git repository**, so LINEA needs at least one git server. It supports three kinds, and several can be active at once.
+
+| Host | Best for | Sign-in | Pipelines |
+|---|---|---|---|
+| **`local`** | Trials and small teams. Repositories live on the LINEA server. | LINEA accounts (username and password) | None |
+| **`gitlab`** | Usual production choice. Lines are GitLab groups. | GitLab OAuth | GitLab CI |
+| **`github`** | GitHub.com and GitHub Enterprise Server. | GitHub OAuth | GitHub Actions |
+
+<CardGrid>
+	<LinkCard title="Use the local host" description="No external service, accounts made on LINEA." href="/configure/local-host/" />
+	<LinkCard title="Connect GitLab" description="Create the OAuth application and set four variables." href="/configure/gitlab-oauth/" />
+	<LinkCard title="Connect GitHub" description="Create an OAuth App, set two variables." href="/configure/github-oauth/" />
+</CardGrid>
+
+## How a host gets switched on
+
+A host is **on** when it is configured. You do not set a flag:
+
+| To switch on | Provide |
+|---|---|
+| GitLab | `GITLAB_HOSTNAME` (or `gitHosts.gitlab.url`) with the OAuth client id and secret |
+| GitHub | `GITHUB_CLIENT_ID` (or `gitHosts.github.clientId`) with the secret |
+| `local` | Nothing. It is on automatically **only when no other host is configured** |
+
+Giving the address of a GitLab or the client id of a GitHub app switches that host on. To keep `local` as well, declare it explicitly in `linea.config.yml`.
+
+## The primary host
+
+The **primary host** holds the module and metamodel registry and the data from before LINEA had several hosts. Choose it with `GIT_PROVIDER` or `gitHosts.primary`:
+
+```yaml title="linea.config.yml"
+gitHosts:
+  primary: gitlab        # local | gitlab | github
+  gitlab:
+    url: https://gitlab.example.com
+    clientId: ${GITLAB_CLIENT_ID}
+    clientSecret: ${GITLAB_SECRET_ID}
+  local:
+    dataDir: /data/repos
+```
+
+- It cannot be switched off while other things depend on it.
+- Switching off a host that still has users or lines returns an error `409` that says how many, and needs explicit confirmation (`force`).
+- At least one usable host must stay on.
+
+## Several hosts together
+
+<Tabs>
+<TabItem label="Config file">
+
+```yaml
+gitHosts:
+  primary: gitlab
+  gitlab:
+    url: https://gitlab.example.com
+    clientId: ${GITLAB_CLIENT_ID}
+    clientSecret: ${GITLAB_SECRET_ID}
+  github:
+    clientId: ${GITHUB_CLIENT_ID}
+    clientSecret: ${GITHUB_CLIENT_SECRET}
+```
+
+</TabItem>
+<TabItem label="Environment only">
+
+```ini
+GIT_PROVIDER=gitlab
+GITLAB_HOSTNAME=https://gitlab.example.com
+GITLAB_CLIENT_ID=...
+GITLAB_SECRET_ID=...
+GITHUB_CLIENT_ID=...
+GITHUB_CLIENT_SECRET=...
+```
+
+</TabItem>
+</Tabs>
+
+A line is created on one host and **stays there**. People may have accounts on several hosts, but LINEA shows **one remote at a time**: their *profile*.
+
+### Profiles
+
+- The lines, products, dashboard and creation form belong to the active profile's host.
+- The words follow the host: *merge request* on GitLab, *pull request* on GitHub, *change request* on `local`.
+- With two or more hosts, the header shows a switch. Changing it reloads the application and is remembered on the account.
+- The package registry is separate: it lives on the primary host and is read with the person's account there.
+
+## Where you change hosts
+
+| Place | Effect |
+|---|---|
+| `linea.config.yml` | Host is set on every start and **locked** in the interface. Survives a wiped database. |
+| **Configuration → Git hosts** | Saved in MongoDB. Hosts the file declares appear locked. |
+| Environment variables | Defaults when neither of the above sets it. |
+
+<Aside type="note" title="Terminology and URLs">
+The sign-in page lists only the hosts that give an OAuth code (GitLab, GitHub). The `local` host appears as a username and password form.
+</Aside>
+
+## Redirect address
+
+For both OAuth hosts, LINEA tells the host to send people back to:
+
+```text
+<REDIRECT_URI>/login
+```
+
+`REDIRECT_URI` is the public address of the LINEA **client** with no trailing slash and no `/login`; LINEA appends it. The value you register in GitLab or GitHub has to match exactly, including scheme and port.
+
+| Where LINEA runs | `REDIRECT_URI` | Register this in GitLab or GitHub |
+|---|---|---|
+| Laptop | `http://localhost:9000` | `http://localhost:9000/login` |
+| Server | `https://linea.example.com` | `https://linea.example.com/login` |

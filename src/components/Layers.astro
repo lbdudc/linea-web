@@ -1,0 +1,99 @@
+---
+import Icon from './Icon.astro';
+// Core, configuration and plugins: three layers, each with a small live illustration.
+---
+<div class="layers" id="layers">
+	<div class="layers__rail" aria-hidden="true">
+		<span class="rail rail--core">Always there</span>
+		<span class="rail rail--cfg">You choose</span>
+		<span class="rail rail--plg">You opt in</span>
+	</div>
+
+	<!-- CORE -->
+	<article class="layer layer--core" style="--c:var(--c-blue)" data-reveal>
+		<header>
+			<span class="ico"><Icon name="layers" size={20} /></span>
+			<div><h3>Core</h3><p>What every line and product needs. LINEA does not work without it.</p></div>
+		</header>
+		<ul class="chips chips--locked">
+			<li><Icon name="cog" size={15} />SPL engine</li>
+			<li><Icon name="box" size={15} />Modules and registry</li>
+			<li><Icon name="tree" size={15} />Metamodels and model editor</li>
+			<li><Icon name="package" size={15} />Products and generation</li>
+			<li><Icon name="user" size={15} />Accounts</li>
+			<li><Icon name="branch" size={15} />Git access</li>
+			<li><Icon name="grid" size={15} />REST API</li>
+			<li><Icon name="tree" size={15} />Feature models</li>
+		</ul>
+		<p class="layer__q"><b>Ask:</b> can LINEA run without it? <em>No.</em></p>
+	</article>
+
+	<!-- CONFIGURATION -->
+	<article class="layer layer--cfg" style="--c:var(--c-violet)" data-reveal>
+		<header>
+			<span class="ico"><Icon name="sliders" size={20} /></span>
+			<div><h3>Configuration</h3><p>The core needs one of several alternatives. You pick which.</p></div>
+		</header>
+		<div class="seg-group">
+			<div class="seg" role="radiogroup" aria-label="Git server">
+				<span class="seg__l">Git server</span>
+				<button type="button" role="radio" aria-checked="true" data-v="local"><Icon name="server" size={14} />local</button>
+				<button type="button" role="radio" aria-checked="false" data-v="gitlab"><Icon name="gitlab" size={14} />GitLab</button>
+				<button type="button" role="radio" aria-checked="false" data-v="github"><Icon name="github" size={14} />GitHub</button>
+			</div>
+			<p class="seg__note" id="seg-note">Repositories live on the LINEA server. People sign in with LINEA accounts.</p>
+		</div>
+		<ul class="chips">
+			<li><Icon name="user" size={15} />Administrators</li>
+			<li><Icon name="file" size={15} />Repository location</li>
+			<li><Icon name="shield" size={15} />Sign-in rules</li>
+		</ul>
+		<p class="layer__q"><b>Ask:</b> is it needed, but in more than one form? <em>Configuration.</em></p>
+	</article>
+
+	<!-- PLUGINS -->
+	<article class="layer layer--plg" style="--c:var(--c-amber)" data-reveal>
+		<header>
+			<span class="ico"><Icon name="plug" size={20} /></span>
+			<div><h3>Plugins</h3><p>Optional. Turn them on or off while LINEA is running, no restart.</p></div>
+		</header>
+		<ul class="toggles">
+			<li>
+				<span class="tg__i"><Icon name="chart" size={16} /></span>
+				<span class="tg__t"><b>analytics-plugin</b><small>Satisfiability, dead features, number of configurations</small></span>
+				<button type="button" class="tg" role="switch" aria-checked="true" aria-label="analytics-plugin"><i></i></button>
+			</li>
+			<li>
+				<span class="tg__i"><Icon name="bot" size={16} /></span>
+				<span class="tg__t"><b>agents-plugin</b><small>AI agents for your lines and products</small></span>
+				<button type="button" class="tg" role="switch" aria-checked="false" aria-label="agents-plugin"><i></i></button>
+			</li>
+			<li>
+				<span class="tg__i"><Icon name="file" size={16} /></span>
+				<span class="tg__t"><b>spl-code-editor</b><small>A Code tab on simple SPLs</small></span>
+				<button type="button" class="tg" role="switch" aria-checked="false" aria-label="spl-code-editor"><i></i></button>
+			</li>
+		</ul>
+		<p class="layer__q"><b>Ask:</b> is LINEA complete without it? <em>Yes: plugin.</em></p>
+	</article>
+</div>
+
+<script>
+	const root = document.getElementById('layers');
+	if (root) {
+		const notes: Record<string, string> = {
+			local: 'Repositories live on the LINEA server. People sign in with LINEA accounts.',
+			gitlab: 'Lines are GitLab groups. People sign in with GitLab OAuth and get CI.',
+			github: 'Lines are repositories linked by topic. People sign in with GitHub OAuth.',
+		};
+		const note = root.querySelector<HTMLElement>('#seg-note')!;
+		const radios = [...root.querySelectorAll<HTMLButtonElement>('[role=radio]')];
+		radios.forEach((r) => r.addEventListener('click', () => {
+			radios.forEach((x) => x.setAttribute('aria-checked', String(x === r)));
+			note.textContent = notes[r.dataset.v ?? 'local'];
+		}));
+		root.querySelectorAll<HTMLButtonElement>('[role=switch]').forEach((s) =>
+			s.addEventListener('click', () => s.setAttribute('aria-checked', String(s.getAttribute('aria-checked') !== 'true'))),
+		);
+	}
+</script>

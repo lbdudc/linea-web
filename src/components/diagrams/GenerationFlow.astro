@@ -1,0 +1,53 @@
+---
+import Icon from '../Icon.astro';
+const travel = 'M330 185 C385 185 400 70 470 70 C540 70 555 185 610 185 C665 185 650 325 705 325';
+---
+<svg class="dg" viewBox="0 0 1000 440" role="img" aria-label="LINEA commits generated code to a generation branch, merges it into bigbang, then opens a merge request into main that must pass the pipeline">
+	<!-- lane bands -->
+	<g class="cv"><rect class="band" x="20" y="24" width="960" height="92" rx="14" /></g>
+	<g class="cc"><rect class="band" x="20" y="140" width="960" height="92" rx="14" /></g>
+	<g class="cg"><rect class="band" x="20" y="268" width="960" height="116" rx="14" /></g>
+
+	<!-- lane labels -->
+	<g class="cv"><circle class="nd-badge" cx="52" cy="62" r="15" /><g class="nd-ico" transform="translate(40 50)"><Icon name="branch" size={20} /></g><text class="dg-lane" x="76" y="62">generation/1.0.1</text><text class="dg-sub" x="76" y="82">temporary</text></g>
+	<g class="cc"><circle class="nd-badge" cx="52" cy="178" r="15" /><g class="nd-ico" transform="translate(40 166)"><Icon name="cog" size={20} /></g><text class="dg-lane" x="76" y="178">bigbang</text><text class="dg-sub" x="76" y="198">only LINEA writes</text></g>
+	<g class="cg"><circle class="nd-badge" cx="52" cy="326" r="15" /><g class="nd-ico" transform="translate(40 314)"><Icon name="user" size={20} /></g><text class="dg-lane" x="76" y="326">main</text><text class="dg-sub" x="76" y="346">generated + your code</text></g>
+
+	<!-- lane lines -->
+	<line class="lane cv" x1="250" y1="70" x2="960" y2="70" />
+	<line class="lane cc" x1="250" y1="185" x2="960" y2="185" />
+	<line class="lane cg" x1="250" y1="325" x2="960" y2="325" />
+
+	<!-- connections -->
+	<path class="conn cv" d="M330 185 C385 185 400 70 470 70" />
+	<path class="conn cv" d="M470 70 C540 70 555 185 610 185" />
+	<path class="conn cg conn--mr" d="M610 185 C665 185 650 325 705 325" />
+
+	<!-- commits -->
+	<g class="commit cc"><circle cx="330" cy="185" r="11" /><text x="330" y="162" text-anchor="middle">v1.0.0</text></g>
+	<g class="commit commit--fill cv"><circle cx="470" cy="70" r="11" /><text x="470" y="46" text-anchor="middle">generate</text></g>
+	<g class="commit commit--fill cc"><circle cx="610" cy="185" r="11" /><text x="610" y="162" text-anchor="middle">v1.0.1</text><g class="tag-ico" transform="translate(624 168)"><Icon name="tag" size={16} /></g></g>
+	<g class="commit cg"><circle cx="290" cy="325" r="11" /><text x="290" y="355" text-anchor="middle">start</text></g>
+	<g class="commit commit--me ca"><circle cx="440" cy="325" r="11" /><text x="440" y="355" text-anchor="middle">your change</text></g>
+	<g class="commit commit--fill cg"><circle cx="705" cy="325" r="11" /><text x="705" y="355" text-anchor="middle">merge</text></g>
+
+	<!-- pipeline gate -->
+	<path class="gate-link" d="M652 250 H742" />
+	<g class="gate cg">
+		<rect x="742" y="222" width="226" height="64" rx="14" filter="url(#f-shadow)" />
+		<circle class="nd-badge" cx="776" cy="254" r="16" />
+		<g class="nd-ico" transform="translate(764 242)"><Icon name="shield" size={24} /></g>
+		<text class="gate-t" x="802" y="250">Pipeline on the MR</text>
+		<text class="dg-sub" x="802" y="270">test_server · test_client</text>
+	</g>
+
+	<!-- travelling pulse -->
+	<circle class="dg-pulse2" r="7"><animateMotion dur="7s" repeatCount="indefinite" path={travel} /></circle>
+
+	<!-- legend -->
+	<g class="legend">
+		<circle cx="260" cy="412" r="6" class="l-v" /><text x="274" y="416">LINEA generates</text>
+		<circle cx="430" cy="412" r="6" class="l-a" /><text x="444" y="416">you change code</text>
+		<circle cx="600" cy="412" r="6" class="l-g" /><text x="614" y="416">merge request</text>
+	</g>
+</svg>

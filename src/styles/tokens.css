@@ -1,0 +1,58 @@
+/* Tokens de LINEA (copiados de linea/client/src/theme/tokens.css).
+   Oscuro por defecto, igual que la aplicación; claro con data-theme="light". */
+@import '@fontsource/ibm-plex-sans/300.css';
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/500.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+:root,
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--ln-ground: #0a1020;
+	--ln-card: #101a2e;
+	--ln-raised: #17233b;
+	--ln-border: #26364f;
+	--ln-text: #f1f5f9;
+	--ln-body: #cbd5e1;
+	--ln-muted: #94a3b8;
+	--ln-faint: #475569;
+	--ln-primary: #60a5fa;
+	--ln-primary-hover: #93c5fd;
+	--ln-button: #2563eb;
+	--ln-button-text: #ffffff;
+	--ln-brand: #222261;
+	--ln-ok: #34d399;
+	--ln-glow: rgba(37, 99, 235, 0.22);
+	--c-blue: #4f8ff7;
+	--c-violet: #a78bfa;
+	--c-cyan: #22d3ee;
+	--c-green: #34d399;
+	--c-amber: #fbbf24;
+	--ln-grad: linear-gradient(120deg, #6366f1 0%, #2563eb 55%, #22d3ee 120%);
+	--ln-highlight: rgba(96, 165, 250, 0.14);
+	--ln-font: 'IBM Plex Sans', system-ui, sans-serif;
+	--ln-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+:root[data-theme='light'] {
+	color-scheme: light;
+	--ln-ground: #f5f7fa;
+	--ln-card: #ffffff;
+	--ln-raised: #eef2f7;
+	--ln-border: #e2e8f0;
+	--ln-text: #1e293b;
+	--ln-body: #334155;
+	--ln-muted: #475569;
+	--ln-faint: #94a3b8;
+	--ln-primary: #222261;
+	--ln-primary-hover: #2563eb;
+	--ln-ok: #059669;
+	--ln-glow: rgba(37, 99, 235, 0.1);
+	--c-blue: #2563eb;
+	--c-violet: #7c3aed;
+	--c-cyan: #0891b2;
+	--c-green: #059669;
+	--c-amber: #d97706;
+	--ln-highlight: rgba(34, 34, 97, 0.08);
+}
