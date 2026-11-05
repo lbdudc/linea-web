@@ -1,0 +1,150 @@
+---
+title: Connect GitLab
+description: Create a GitLab OAuth application and connect LINEA to GitLab.com or a self-managed GitLab, step by step.
+sidebar:
+  order: 4
+---
+
+import { Steps, Tabs, TabItem, Aside, Badge } from '@astrojs/starlight/components';
+
+LINEA uses **GitLab OAuth** for sign-in and acts with each person's own token, so GitLab permissions apply to everything people do. A *line* becomes a GitLab **group** and each *product* a **subgroup** inside it.
+
+<Badge text="Needs about 10 minutes" variant="note" />
+
+## Before you start
+
+You need:
+
+- the **public address of LINEA**, for example `https://linea.example.com` (or `http://localhost:9000` to try it locally);
+- a GitLab account that can create an application: your own user, a group owner, or an instance administrator;
+- the server able to **reach GitLab** over the network.
+
+## 1. Create the OAuth application in GitLab
+
+<Steps>
+
+1. Choose where the application belongs. Any of these works; pick the one that matches who should manage it:
+
+   | Scope | Where in GitLab |
+   |---|---|
+   | Only you | **User settings → Applications** |
+   | A group | **Group → Settings → Applications** |
+   | The whole instance | **Admin area → Applications** (self-managed only) |
+
+2. Click **Add new application** and fill the form:
+
+   | Field | Value |
+   |---|---|
+   | **Name** | `LINEA` (people see it on the consent screen) |
+   | **Redirect URI** | `https://linea.example.com/login`. Must match `REDIRECT_URI` + `/login` exactly |
+   | **Confidential** | ✔ checked |
+   | **Scopes** | ✔ **`api`**. LINEA requests exactly this scope |
+   | **Trusted** (instance apps only) | Optional. Skips the consent screen for your users |
+
+3. Save. GitLab shows the **Application ID** and the **Secret** once. Copy both now.
+
+</Steps>
+
+<Aside type="caution">
+The secret is shown only at creation. If you lose it, open the application and **Renew secret**, then update LINEA.
+</Aside>
+
+## 2. Give LINEA the credentials
+
+<Steps>
+
+1. Put the secrets in the **server environment file**, `linea/server/.env`. Never commit it.
+
+   ```ini title="server/.env"
+   JWT_SIGN_KEY=<output of: openssl rand -hex 32>
+
+   GITLAB_HOSTNAME=https://gitlab.example.com
+   GITLAB_CLIENT_ID=<Application ID>
+   GITLAB_SECRET_ID=<Secret>
+
+   REDIRECT_URI=https://linea.example.com
+   ADMIN_USERS=your-gitlab-username
+   ```
+
+   - `GITLAB_HOSTNAME` has **no trailing slash**. For GitLab.com it is `https://gitlab.com`.
+   - `REDIRECT_URI` is the client address **without** `/login`.
+   - `ADMIN_USERS` lists GitLab usernames that become LINEA administrators.
+
+2. *(Recommended)* Make GitLab the primary host and choose where lines are created, in `linea.config.yml`:
+
+   ```yaml title="deploy/config/linea.config.yml"
+   gitHosts:
+     primary: gitlab
+     gitlab:
+       url: ${GITLAB_HOSTNAME}
+       clientId: ${GITLAB_CLIENT_ID}
+       clientSecret: ${GITLAB_SECRET_ID}
+       defaultNamespace: linea/spls
+   ```
+
+   `defaultNamespace` is the GitLab group new lines are created in by default.
+
+3. **Restart** so the server picks the values up.
+
+   ```bash
+   docker compose up -d --force-recreate server
+   ```
+
+</Steps>
+
+A ready-made GitLab-only config ships in `deploy/config-gitlab/linea.config.yml`; select it with `LINEA_CONFIG_DIR=./config-gitlab` in your `.env.prod`.
+
+## 3. Sign in and verify
+
+<Steps>
+
+1. Open LINEA. The sign-in page now shows **Sign in with GitLab**.
+2. Click it, authorise the application on GitLab and you are sent back to LINEA.
+3. Open **Configuration → Git hosts**. GitLab is listed as active; if you declared it in the file it appears locked as `linea.config.yml`.
+4. Create a line. Check in GitLab that a **group** with the line name appeared, containing the line's repository.
+
+</Steps>
+
+## What people need in GitLab
+
+LINEA does only what the person's GitLab role allows.
+
+| To do this in LINEA | Needs at least |
+|---|---|
+| See a line and its products | Guest or higher in the line's group |
+| **Create a product** | **Reporter** on the line |
+| **Generate a product** | **Maintainer** on the product |
+| Create a line | Permission to create groups in the chosen parent group |
+| Merge the `bigbang → main` request | Whatever the project's merge rules require |
+
+Members of a line's group are inherited by its products, so adding someone to the line gives them the products.
+
+## Tokens and sessions
+
+GitLab tokens last about two hours and LINEA refreshes them. LINEA's own session length is an [instance setting](/configure/instance-settings/) (`sessionHours`).
+
+## Self-managed GitLab
+
+<Aside type="tip" title="Internal certificate authority">
+If your GitLab uses a certificate signed by a private CA, Node will reject it. Give the server the CA file:
+
+```ini
+NODE_EXTRA_CA_CERTS=/etc/ssl/certs/company-ca.pem
+```
+</Aside>
+
+- The LINEA **server** must reach GitLab; the **browser** must reach both.
+- Push webhooks need the reverse direction too. See [Webhooks and events](/configure/webhooks-and-events/).
+- To keep the module registry in GitLab, see [The package registry](/configure/registry/).
+
+## Common problems
+
+| Symptom | Likely cause and fix |
+|---|---|
+| GitLab says *The redirect URI included is not valid* | The Redirect URI in the application differs from `REDIRECT_URI` + `/login`. Match scheme, host, port and path. |
+| Sign-in button spins forever after a restart | Stale browser session. Clear the site's local storage and sign in again. |
+| `401` right after authorising | Wrong `GITLAB_CLIENT_ID` or `GITLAB_SECRET_ID`, or the secret was renewed. |
+| No *Sign in with GitLab* button | `GITLAB_HOSTNAME` is empty, so the host is not switched on. |
+| Line creation fails with a permission error | The person cannot create groups under `defaultNamespace`. |
+
+More in [Troubleshooting](/configure/troubleshooting/).

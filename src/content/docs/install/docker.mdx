@@ -1,0 +1,168 @@
+---
+title: Install with Docker
+description: "Deploy LINEA with Docker Compose: environment files, first start, plugins and updates."
+sidebar:
+  order: 2
+---
+
+import { Steps, Tabs, TabItem, Aside, FileTree } from '@astrojs/starlight/components';
+
+The `linea/deploy/` folder contains a Compose file that starts everything: MongoDB (as a replica set), the LINEA server, the web client and a Traefik proxy.
+
+<FileTree>
+
+- linea/
+  - deploy/
+    - docker-compose.yml
+    - docker-compose.plugins.yml  optional services (flamapy)
+    - .env.example  copy to `.env` for local use
+    - .env.prod.example  copy to `.env.prod` for production
+    - linea.config.example.yml
+    - config/
+      - linea.config.yml  mounted at `/config` in the container
+    - config-gitlab/
+      - linea.config.yml  GitLab as the only git host
+  - server/
+    - .env.example  secrets: JWT key, OAuth
+
+</FileTree>
+
+## First start
+
+<Steps>
+
+1. **Create the server environment file.** It holds the secrets and is never committed.
+
+   ```bash
+   cd linea/server
+   cp .env.example .env
+   ```
+
+   Edit `.env` and set at least `JWT_SIGN_KEY` to a long random string:
+
+   ```bash
+   openssl rand -hex 32
+   ```
+
+2. **Create the Compose settings.**
+
+   <Tabs>
+   <TabItem label="Local trial">
+
+   ```bash
+   cd linea/deploy
+   cp .env.example .env
+   ```
+
+   The defaults serve LINEA on [http://localhost:9000](http://localhost:9000) with the `local` git host.
+
+   </TabItem>
+   <TabItem label="Production">
+
+   ```bash
+   cd linea/deploy
+   cp .env.prod.example .env.prod
+   ```
+
+   Set the public address and the administrators:
+
+   ```ini
+   PROXY_PORT=18009
+   NODE_ENV=production
+   REDIRECT_URI=https://linea.example.com
+   PUBLIC_SERVER_URL=https://linea.example.com
+   ADMIN_USERS=alice,bob
+   ```
+
+   </TabItem>
+   </Tabs>
+
+3. **Choose how people sign in.** With nothing configured LINEA uses the `local` host: set the first administrator in `deploy/.env`.
+
+   ```ini
+   ADMIN_USERS=admin
+   LINEA_ADMIN_PASSWORD=choose-a-long-password
+   ```
+
+   For GitLab or GitHub follow [Connect GitLab](/configure/gitlab-oauth/) or [Connect GitHub](/configure/github-oauth/) instead.
+
+4. **Start the stack.**
+
+   <Tabs>
+   <TabItem label="Local trial">
+
+   ```bash
+   docker compose up --build -d
+   ```
+
+   </TabItem>
+   <TabItem label="Production">
+
+   ```bash
+   docker compose --env-file .env.prod up --build -d
+   ```
+
+   </TabItem>
+   <TabItem label="With plugins">
+
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.plugins.yml up -d --build
+   ```
+
+   Adds the flamapy analysis service used by the [analytics plugin](/configure/plugins/).
+
+   </TabItem>
+   </Tabs>
+
+5. **Open the address** you set in `REDIRECT_URI` ([http://localhost:9000](http://localhost:9000) by default) and sign in.
+
+</Steps>
+
+## The services
+
+| Container | Image | Role |
+|---|---|---|
+| `splalm-mongo` | `mongo:8.2` | Database, started as replica set `rs0`. A one-shot container initiates the set. |
+| `splalm-server` | built from `linea/server` | API, engine, generation. Reads `server/.env` and the `environment:` block. |
+| `splalm-client` | built from `linea/client` | The web client. |
+| `splalm-proxy` | `traefik:v3.6` | Exposes `PROXY_PORT` and routes by labels. |
+| `splalm-flamapy` | built from `plugins/analytics-plugin/service` | Only with `docker-compose.plugins.yml`. |
+
+Two named volumes keep your data: `mongo-data` and `repos-data` (the repositories of the `local` host, mounted at `/data/repos`).
+
+<Aside type="caution">
+The server container mounts the Docker socket (`/var/run/docker.sock`) so the playground runner can start containers. Treat access to the LINEA server like access to the Docker host, and do not expose the server port directly: only the proxy.
+</Aside>
+
+## Changing configuration later
+
+<Aside type="note" title="Environment changes need a recreate">
+Docker reads `env_file` when a container is created. After editing `server/.env`, recreate the server so it picks the change up:
+
+```bash
+docker compose up -d --force-recreate server
+```
+
+A change to `linea.config.yml` needs only a restart, because the file is read at startup: `docker compose restart server`.
+</Aside>
+
+## Where the configuration file goes
+
+`deploy/config/linea.config.yml` is mounted read-only at `/config`. To use another folder set `LINEA_CONFIG_DIR`; the GitLab-only example is a ready-made case:
+
+```ini
+# deploy/.env.prod
+LINEA_CONFIG_DIR=./config-gitlab
+```
+
+See [linea.config.yml](/reference/linea-config-yml/) for the format.
+
+## Updating
+
+```bash
+git pull
+cd linea/deploy
+docker compose --env-file .env.prod up --build -d
+```
+
+MongoDB and the repositories live in volumes, so rebuilding keeps your data.

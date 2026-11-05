@@ -1,0 +1,73 @@
+---
+title: Users and administrators
+description: "Who can configure LINEA, how administrators are chosen, and what each role can do."
+sidebar:
+  order: 6
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+**Configuration is for administrators.** They set the instance up; everyone else uses it. This follows the model of tools like n8n: an owner and admins configure, the rest work.
+
+## What only administrators can do
+
+| Area | Examples |
+|---|---|
+| **Git hosts** | Add, switch off or change a host |
+| **Plugins** | Install, enable, disable, configure, download the config |
+| **Users** | Create accounts, set passwords, grant or remove the administrator role |
+| **Instance settings** | Session length, lockout rules, publishing rights, audit retention |
+
+Everyone else gets `403` from these endpoints, and the interface hides the entries: there is no menu item, and the page address sends them home. What the page needs before anyone signs in (`GET /api/users/config`, `GET /api/plugins/enabled`) stays public and carries no settings.
+
+## Choosing the first administrators
+
+`ADMIN_USERS` is a comma-separated list of **git usernames** who are administrators from the start:
+
+```ini
+ADMIN_USERS=alice,bob
+```
+
+<Aside type="tip" title="On GitLab or GitHub">
+Use the **GitLab or GitHub username** exactly as it appears on the host. They are administrators the first time they sign in.
+</Aside>
+
+<Aside type="tip" title="On the local host">
+Accounts do not exist yet, so LINEA creates them at start with the password in `LINEA_ADMIN_PASSWORD`. Change it after the first sign-in.
+</Aside>
+
+After that, administrators manage the role in the interface:
+
+<Steps>
+
+1. Open **Configuration → Users**.
+2. Pick a person and switch **Administrator** on or off.
+3. The **last administrator cannot be removed**, so you can never lock yourself out.
+
+</Steps>
+
+## Project roles are separate
+
+Being an administrator does not give rights on repositories. What someone can do on a line or a product comes from their role **on the git host**:
+
+| Action | Role needed |
+|---|---|
+| See a line and its products | Guest or higher |
+| Create a product | Reporter on the line |
+| Generate a product, retry jobs | Maintainer on the product |
+
+On the `local` host the same levels apply to members of the line.
+
+## Service accounts
+
+Services that act on behalf of people, such as the AI agents service, authenticate with a **service key** instead of a password. LINEA lets the service do what the person it acts for could do, and logs both.
+
+```ini
+LINEA_SERVICE_KEYS=agents-plugin:<secret>
+```
+
+The service sends `Authorization: Service <key>` and `X-Act-As: <user>`. See [Plugins](/configure/plugins/).
+
+## Audit
+
+LINEA records administrative actions such as publishing a package. Entries older than `auditRetentionDays` (180 by default) are removed. See [Instance settings](/configure/instance-settings/).

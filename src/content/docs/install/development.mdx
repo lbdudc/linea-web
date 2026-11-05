@@ -1,0 +1,100 @@
+---
+title: Run the development stack
+description: Run LINEA from source, with an in-memory GitLab or GitHub, no accounts needed.
+sidebar:
+  order: 3
+---
+
+import { Steps, Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+`linea/server/dev/` contains a complete stack for a laptop. It starts MongoDB, the server and, when you ask, a **fake GitLab or GitHub that lives in memory**. Nothing talks to a real service, so you can try the whole flow, including merge requests and OAuth sign-in, with no credentials.
+
+## Start the backend
+
+`npm run dev:up` runs in `linea/server` and keeps logs and data under `.dev-data/`.
+
+<Tabs>
+<TabItem label="local host">
+
+Repositories stay on the server itself. Sign in as `dev` / `devdevdev`.
+
+```bash
+cd linea/server
+npm run dev:up
+```
+
+</TabItem>
+<TabItem label="Dev GitLab">
+
+A GitLab in memory with OAuth that signs you in as the user `dev`.
+
+```bash
+GIT_PROVIDER=gitlab npm run dev:up
+```
+
+</TabItem>
+<TabItem label="Dev GitHub">
+
+```bash
+GIT_PROVIDER=github npm run dev:up
+```
+
+</TabItem>
+<TabItem label="All three hosts">
+
+The first one in the list is the primary host.
+
+```bash
+GIT_HOSTS=local,gitlab,github npm run dev:up
+```
+
+</TabItem>
+</Tabs>
+
+## Start the client
+
+OAuth sends the browser back to `REDIRECT_URI`, so the client has to run on the port the server expects (9000 by default).
+
+```bash
+cd linea/client
+npx vite --port 9000 --strictPort
+```
+
+Open [http://localhost:9000](http://localhost:9000).
+
+## Move ports
+
+Something else uses a default port? Each one has a variable:
+
+| Variable | Default | Moves |
+|---|---|---|
+| `MONGO_PORT` | `27017` | MongoDB |
+| `SERVER_PORT` | `3000` | The LINEA server |
+| `CLIENT_PORT` | `9000` | The address the server tells OAuth to return to |
+| `GITLAB_PORT`, `GITHUB_PORT` | `8081`, `8082` | The in-memory hosts |
+
+<Aside type="caution" title="If you move the client port">
+The client's development server defaults its API address to `http://localhost:9000`. On another port start it with an empty `API_URL` and point it at the server:
+
+```bash
+API_URL= LINEA_SERVER=http://127.0.0.1:3100 npx vite --port 9100 --strictPort
+```
+</Aside>
+
+## The registry of modules
+
+The sample metamodels and modules live in the `metamodels/` and `modules/` folders of the workspace. `REGISTRY_DIR` has to point at the folder that contains them (the workspace root), not at `linea/`:
+
+```bash
+REGISTRY_DIR=/path/to/workspace npm run dev:up
+```
+
+The server publishes them into the git host at startup, so **Modules** in the menu lists them.
+
+## Starting over
+
+The in-memory GitLab and GitHub forget everything when they stop. If you restart them, also remove `server/.dev-data` and restart MongoDB, or LINEA will remember lines whose repositories are gone.
+
+<Aside type="tip">
+`npm run dev:smoke` runs the whole flow through the HTTP API (login, registry, a line made of modules, a product, its models and generation with merge requests) and is a quick way to check an environment.
+</Aside>

@@ -1,0 +1,140 @@
+---
+import Icon from './Icon.astro';
+import Shot from './Shot.astro';
+
+// Hotspots are positioned in % of the displayed (cropped) screenshot.
+type Pin = { x: number; y: number; title: string; text: string };
+const stops: {
+	id: string; icon: string; title: string; text: string; shot: string; alt: string; ratio: string; url: string; pins: Pin[];
+}[] = [
+	{
+		id: 'registry', icon: 'box', title: 'Browse the registry',
+		text: 'Modules and metamodels are plain git repositories, versioned with tags.',
+		shot: 'registry', alt: 'The LINEA module registry listing modules and their versions', ratio: '1456/640', url: '/modules',
+		pins: [
+			{ x: 77, y: 15, title: 'Publish your own', text: 'Register an existing repository, or start a new module from the editor.' },
+			{ x: 90, y: 81, title: 'Versions are git tags', text: 'v0.4.0 is a tag on the module’s repository. Lines pin a range of versions.' },
+			{ x: 62, y: 52, title: 'One card per package', text: 'The name, where it lives in git and what it provides.' },
+		],
+	},
+	{
+		id: 'compose', icon: 'puzzle', title: 'Compose a line from modules',
+		text: 'Pick modules and LINEA checks that everything fits together.',
+		shot: 'line-modules', alt: 'Selecting modules for the FieldService line', ratio: '1456/828', url: '/lines/FieldService/modules',
+		pins: [
+			{ x: 14, y: 30, title: 'Click to add or remove', text: 'Highlighted cards are in the line. Dependencies are offered when a module needs one.' },
+			{ x: 64, y: 50, title: 'Checked on every change', text: 'Versions, dependencies and the metamodels they need are resolved before you can save.' },
+			{ x: 10, y: 72, title: 'The composed feature model', text: 'Grafted from every module’s own model. Read-only here.' },
+		],
+	},
+	{
+		id: 'model', icon: 'tree', title: 'Read the feature model',
+		text: 'The model is composed from the modules, shown as UVL, diagram, XML or form.',
+		shot: 'feature-model', alt: 'The composed feature model of the line in UVL', ratio: '1456/612', url: '/lines/FieldService/model',
+		pins: [
+			{ x: 22, y: 29, title: 'Five views of one model', text: 'Feature diagram, UVL, XML, text and form all edit the same model.' },
+			{ x: 28, y: 52, title: 'UVL', text: 'mandatory, optional, or and alternative describe what a product may contain.' },
+			{ x: 83, y: 29, title: 'Read-only for modular lines', text: 'It is composed from the modules, so you change modules, not this text.' },
+		],
+	},
+	{
+		id: 'select', icon: 'check', title: 'Select features per product',
+		text: 'Each product keeps its own selection, validated as you tick features.',
+		shot: 'feature-selection', alt: 'Selecting features for the product NorthRegion', ratio: '1456/760', url: '/products/NorthRegion?tab=models',
+		pins: [
+			{ x: 76, y: 22, title: 'One model per metamodel', text: 'basic, datamodel, browser, featureselection and gismodel, each with its status.' },
+			{ x: 36, y: 41, title: 'Live validation', text: 'Constraints are checked against your selection, so an invalid product never reaches generation.' },
+			{ x: 30, y: 58, title: 'Tick what the customer needs', text: 'Mandatory features are implied; optional ones are yours to pick.' },
+		],
+	},
+	{
+		id: 'review', icon: 'sparkle', title: 'Check the product, then generate',
+		text: 'Models, validity, generation and sync status at a glance.',
+		shot: 'product-overview', alt: 'Overview of the product NorthRegion with its models and generation status', ratio: '1456/740', url: '/products/NorthRegion',
+		pins: [
+			{ x: 94, y: 11, title: 'Generate product', text: 'Derives the code, commits it to bigbang and opens the merge request into main.' },
+			{ x: 12, y: 34, title: 'Generation status', text: 'Whether the product is up to date with its line.' },
+			{ x: 9, y: 58, title: 'Every model, validated', text: 'Open any of them to edit it as text, form or diagram.' },
+		],
+	},
+];
+---
+<div class="tour" id="tour">
+	<div class="tour__tabs" role="tablist" aria-label="Product tour">
+		{stops.map((s, i) => (
+			<button type="button" role="tab" id={`tab-${s.id}`} aria-controls={`pane-${s.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1} data-tab={s.id}>
+				<span class="tour__ico"><Icon name={s.icon} size={18} /></span>
+				<span class="tour__txt"><b>{s.title}</b><small>{s.text}</small></span>
+			</button>
+		))}
+	</div>
+
+	<div class="appwin">
+		<div class="appwin__bar">
+			<span class="appwin__dots"><i></i><i></i><i></i></span>
+			<span class="appwin__url" id="tour-url">localhost:9000<b>{stops[0].url}</b></span>
+			<span class="appwin__nav">
+				<button type="button" id="tour-prev" aria-label="Previous step"><Icon name="arrow" size={16} class="flip" /></button>
+				<button type="button" id="tour-next" aria-label="Next step"><Icon name="arrow" size={16} /></button>
+			</span>
+		</div>
+
+		<div class="appwin__body">
+			{stops.map((s, i) => (
+				<div class="tour__pane" role="tabpanel" id={`pane-${s.id}`} aria-labelledby={`tab-${s.id}`} data-url={s.url} hidden={i !== 0}>
+					<div class="tour__shot">
+						<Shot name={s.shot} alt={s.alt} ratio={s.ratio} class="shot--bare" sizes="(min-width: 1100px) 760px, 100vw" />
+						{s.pins.map((p, j) => (
+							<button type="button" class:list={['pin', { 'pin--left': p.x > 58 }, { 'pin--up': p.y > 62 }]} style={`left:${p.x}%;top:${p.y}%`} aria-label={`${p.title}: ${p.text}`}>
+								<span class="pin__n">{j + 1}</span>
+								<span class="pin__tip"><b>{p.title}</b>{p.text}</span>
+							</button>
+						))}
+					</div>
+				</div>
+			))}
+		</div>
+
+		<div class="appwin__foot">
+			<span class="appwin__step" id="tour-step">Step 1 of {stops.length}</span>
+			<span class="appwin__hint"><span class="pin pin--static"><span class="pin__n">1</span></span> Hover or tap the numbered points</span>
+			<span class="appwin__bars" aria-hidden="true">{stops.map((_, i) => <i class:list={[{ on: i === 0 }]}></i>)}</span>
+		</div>
+	</div>
+</div>
+
+<script>
+	const root = document.getElementById('tour');
+	if (root) {
+		const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role=tab]')];
+		const panes = [...root.querySelectorAll<HTMLElement>('[role=tabpanel]')];
+		const bars = [...root.querySelectorAll<HTMLElement>('.appwin__bars i')];
+		const url = root.querySelector<HTMLElement>('#tour-url b')!;
+		const step = root.querySelector<HTMLElement>('#tour-step')!;
+		let cur = 0;
+		const show = (i: number, focus = false) => {
+			cur = (i + tabs.length) % tabs.length;
+			tabs.forEach((t, j) => { t.setAttribute('aria-selected', String(cur === j)); t.tabIndex = cur === j ? 0 : -1; });
+			panes.forEach((p, j) => { p.hidden = cur !== j; });
+			bars.forEach((b, j) => b.classList.toggle('on', j <= cur));
+			url.textContent = panes[cur].dataset.url ?? '';
+			step.textContent = `Step ${cur + 1} of ${tabs.length}`;
+			if (focus) tabs[cur].focus();
+		};
+		tabs.forEach((t, i) => {
+			t.addEventListener('click', () => show(i));
+			t.addEventListener('keydown', (e) => {
+				if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); show(i + 1, true); }
+				if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); show(i - 1, true); }
+			});
+		});
+		root.querySelector('#tour-next')?.addEventListener('click', () => show(cur + 1));
+		root.querySelector('#tour-prev')?.addEventListener('click', () => show(cur - 1));
+		// pins: tap toggles on touch screens; only one open at a time
+		root.addEventListener('click', (e) => {
+			const pin = (e.target as HTMLElement).closest('.pin:not(.pin--static)');
+			root.querySelectorAll('.pin.is-open').forEach((p) => { if (p !== pin) p.classList.remove('is-open'); });
+			pin?.classList.toggle('is-open');
+		});
+	}
+</script>

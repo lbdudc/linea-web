@@ -1,0 +1,99 @@
+---
+title: The package registry
+description: "Where modules and metamodels come from, how to publish them and how to control who is trusted."
+sidebar:
+  order: 9
+---
+
+import { Steps, Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Modules and metamodels are **git repositories**. LINEA has no package database: the git server is the registry, and versions are tags.
+
+| Package | Repository topic | A version is |
+|---|---|---|
+| Module | `linea-module` | a tag `vX.Y.Z` |
+| Metamodel | `linea-metamodel` | a tag `vX.Y.Z` |
+
+## Two ways to list packages
+
+<Tabs>
+<TabItem label="By topic (default)">
+
+With nothing configured, LINEA lists **every repository with the topic** it can see. Simple, and fine for small teams.
+
+</TabItem>
+<TabItem label="Explicit catalogue">
+
+Set `LINEA_REGISTRY` to a repository that holds a `registry.json`. LINEA lists **only what is registered there**.
+
+```ini title="server/.env"
+LINEA_REGISTRY=gitlab:linea/registry
+```
+
+| Value | Registry lives… |
+|---|---|
+| `gitlab:linea/registry` | in the GitLab project `linea/registry` |
+| `github:acme/linea-registry` | in the GitHub repository `acme/linea-registry` |
+| `local:registry/index` | in the `local` host (the default for trials) |
+
+Registering or removing a package is a **commit made with the person's own token**, so the git server decides who may do it and its history is the registry's history.
+
+</TabItem>
+</Tabs>
+
+<Aside type="note">
+The catalogue is informational. A package that is not registered can still be used, and removing one from the catalogue does not break lines that already depend on it. An unreachable entry stays in the list marked `unavailable`.
+</Aside>
+
+## Publish the sample registry
+
+The repository ships example `metamodels/` and `modules/`. Publish them into your git host with the script the server uses itself:
+
+```bash
+cd linea/server
+node scripts/publish-registry.mjs
+```
+
+On the `local` host this happens **automatically at startup** when you set:
+
+```ini
+LINEA_REGISTRY=local:registry/index
+REGISTRY_DIR=/path/to/workspace     # the folder that contains metamodels/ and modules/
+```
+
+The Docker image carries them in `/srv/registry`.
+
+## Publish your own module
+
+<Steps>
+
+1. Open **Modules → New module**, or register an existing repository with **Register a package**.
+2. Edit its files and its **Declaration**, which says which metamodels and modules it needs and which models it offers.
+3. Click **Check**. LINEA validates the package.
+4. Click **Publish**. LINEA tags the version.
+5. Use it from a [modular line](/concepts/line-types/).
+
+</Steps>
+
+Who may publish or edit the catalogue is an [instance setting](/configure/instance-settings/): `modulesPublish` and `modulesRegister`.
+
+## Trust
+
+<Aside type="caution" title="Package scripts run without isolation">
+A metamodel's `constraints` and `specs`, and a module's `extra.js` and `transformation.js`, run **on the server and in the browser with no sandbox**. Only accept packages from people you trust.
+</Aside>
+
+Limit where packages may come from with `LINEA_TRUSTED_NAMESPACES`, a comma-separated list of GitLab group or project paths and `github:<owner>` entries:
+
+```ini
+LINEA_TRUSTED_NAMESPACES=linea,team/modules,github:acme
+```
+
+- Empty means **anywhere**.
+- Set, but with nothing for a host, means **nothing is read from that host**.
+
+To list packages from GitHub owners even when the deployment is not on GitHub, use `LINEA_GITHUB_OWNERS=acme,other-org`.
+
+## The feature metamodel
+
+Every line has the `featuremodel` metamodel. Where it is published is `LINEA_FEATURE_METAMODEL`; leave it empty for the default (`gitlab:linea/metamodels/featuremodel`), or set it for another host, for example `local:registry/metamodels/featuremodel`.

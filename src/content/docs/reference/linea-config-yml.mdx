@@ -1,0 +1,173 @@
+---
+title: linea.config.yml
+description: "The deployment configuration file: git hosts, plugins and instance settings, with every key explained."
+sidebar:
+  order: 2
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+`linea.config.yml` describes **what a deployment is made of**: its git hosts, its plugins and how the instance behaves. Because secrets stay in the environment as `${NAME}`, the file is safe to commit.
+
+| | |
+|---|---|
+| **Path** | `LINEA_CONFIG`. In Docker, `deploy/config/linea.config.yml` is mounted read-only at `/config` |
+| **Example** | `deploy/linea.config.example.yml` |
+| **Read** | Once, at server start. Change it, then restart |
+| **If wrong** | A missing path or invalid YAML **stops the server** |
+
+## What the file does
+
+- A git host or plugin **listed** in the file is put in that state on **every start**, so it survives a wiped database, and it is **locked** in the Configuration and Plugins views.
+- Anything **not listed** stays whatever administrators chose in the interface (kept in MongoDB).
+- `${NAME}` and `${NAME:-default}` are replaced from the environment.
+
+## Structure
+
+```yaml
+gitHosts:      # where lines and products live
+  primary: …
+  local:   { … }
+  gitlab:  { … }
+  github:  { … }
+plugins:       # optional capabilities
+  <plugin-id>: { enabled: …, settings: { … } }
+instance:      # how this LINEA behaves
+  <setting>: …
+```
+
+## `gitHosts`
+
+| Key | Type | Description |
+|---|---|---|
+| `primary` | `local` \| `gitlab` \| `github` | The primary host: holds the registry. Must be one of those configured |
+| `local.dataDir` | path | Folder for the local host's repositories (`/data/repos` in Docker) |
+| `gitlab.url` | URL | Address of GitLab, no trailing slash |
+| `gitlab.clientId` | string | OAuth Application ID |
+| `gitlab.clientSecret` | string | OAuth Secret. Use `${GITLAB_SECRET_ID}` |
+| `gitlab.defaultNamespace` | path | Group new lines are created in by default, for example `linea/spls` |
+| `github.clientId` | string | OAuth App Client ID |
+| `github.clientSecret` | string | OAuth App Client secret. Use `${GITHUB_CLIENT_SECRET}` |
+
+## `plugins`
+
+Each key is a plugin id.
+
+| Key | Type | Description |
+|---|---|---|
+| `enabled` | boolean | Forces the plugin on or off on every start and locks that switch |
+| `settings` | map | The plugin's settings. Those listed are locked; the plugin's other settings stay editable |
+
+A plugin declared in the file but missing a **required** setting is left disabled, with a warning in the log. Bundled plugins: `analytics-plugin`, `agents-plugin`, `spl-code-editor`, `hello-plugin`. See [Plugins](/configure/plugins/).
+
+## `instance`
+
+See [Instance settings](/configure/instance-settings/) for the meaning of each key.
+
+| Key | Default | Range / values |
+|---|---|---|
+| `sessionHours` | about 2 | 0.5 – 720 |
+| `maxFailedSignIns` | 10 | 1 – 100 |
+| `lockMinutes` | 15 | 1 – 1440 |
+| `minPasswordLength` | 8 | 8 – 128 |
+| `modulesPublish` | `everyone` | `everyone`, `admins` |
+| `modulesRegister` | `everyone` | `everyone`, `admins` |
+| `syncConcurrency` | 2 | 1 – 20 |
+| `schedulerPaused` | `false` | boolean |
+| `auditRetentionDays` | 180 | 1 – 3650 |
+
+## Complete examples
+
+<Tabs>
+<TabItem label="Trial (local)">
+
+```yaml
+gitHosts:
+  primary: local
+  local:
+    dataDir: /data/repos
+
+plugins:
+  analytics-plugin:
+    enabled: true
+    settings:
+      url: ${FLAMAPY_API_URL:-http://splalm-flamapy:8000}
+```
+
+</TabItem>
+<TabItem label="GitLab only">
+
+This is the `deploy/config-gitlab/linea.config.yml` that ships with LINEA.
+
+```yaml
+gitHosts:
+  primary: gitlab
+  gitlab:
+    url: ${GITLAB_HOSTNAME:-https://gitlab.example.com}
+    clientId: ${GITLAB_CLIENT_ID}
+    clientSecret: ${GITLAB_SECRET_ID}
+
+plugins:
+  analytics-plugin:
+    enabled: true
+    settings:
+      url: ${FLAMAPY_API_URL:-http://splalm-flamapy:8000}
+  agents-plugin:
+    enabled: false
+```
+
+</TabItem>
+<TabItem label="GitLab and GitHub">
+
+```yaml
+gitHosts:
+  primary: gitlab
+  gitlab:
+    url: https://gitlab.example.com
+    clientId: ${GITLAB_CLIENT_ID}
+    clientSecret: ${GITLAB_SECRET_ID}
+    defaultNamespace: linea/spls
+  github:
+    clientId: ${GITHUB_CLIENT_ID}
+    clientSecret: ${GITHUB_CLIENT_SECRET}
+```
+
+</TabItem>
+<TabItem label="Everything">
+
+```yaml
+gitHosts:
+  primary: gitlab
+  local:
+    dataDir: /data/repos
+  gitlab:
+    url: ${GITLAB_HOSTNAME}
+    clientId: ${GITLAB_CLIENT_ID}
+    clientSecret: ${GITLAB_SECRET_ID}
+    defaultNamespace: linea/spls
+
+plugins:
+  analytics-plugin:
+    enabled: true
+    settings:
+      url: ${FLAMAPY_API_URL:-http://splalm-flamapy:8000}
+  agents-plugin:
+    enabled: false
+  spl-code-editor:
+    enabled: false      # a Code tab on simple SPLs
+
+instance:
+  sessionHours: 8
+  maxFailedSignIns: 5
+  lockMinutes: 30
+  modulesPublish: admins
+  modulesRegister: admins
+  auditRetentionDays: 365
+```
+
+</TabItem>
+</Tabs>
+
+<Aside type="tip" title="Generate one from a running instance">
+In the **Plugins** view, **Download config** writes the current choices as a file like this one. Secrets become `${PLUGIN_KEY}` placeholders.
+</Aside>

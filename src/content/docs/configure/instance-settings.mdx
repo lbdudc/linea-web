@@ -1,0 +1,72 @@
+---
+title: Instance settings
+description: "Tune how this LINEA behaves: sessions, lockout, publishing rights, the scheduler and audit retention."
+sidebar:
+  order: 7
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+**Instance settings** control how a LINEA deployment behaves, beyond which git hosts it has. Administrators change them in **Configuration**, or you fix them in `linea.config.yml` under the `instance:` key.
+
+A setting resolves as **default** < **saved in the interface** < **`instance:` in the config file**. A key set in the file is **locked** in the interface; leave a key out to let administrators change it there.
+
+## Reference
+
+| Setting | Group | Default | Range or values | What it does |
+|---|---|---|---|---|
+| `sessionHours` | Sign-in | about 2 | 0.5 – 720 | How long a session lasts before people sign in again |
+| `maxFailedSignIns` | Sign-in | 10 | 1 – 100 | Wrong passwords before the door closes, per person and address |
+| `lockMinutes` | Sign-in | 15 | 1 – 1440 | How long it stays closed |
+| `minPasswordLength` | Sign-in | 8 | 8 – 128 | Minimum length for accounts made on this server |
+| `modulesPublish` | Modules | `everyone` | `everyone`, `admins` | Who may publish a module version |
+| `modulesRegister` | Modules | `everyone` | `everyone`, `admins` | Who may change the registry listing |
+| `syncConcurrency` | Scheduler | 2 | 1 – 20 | How many product syncs run at once |
+| `schedulerPaused` | Scheduler | `false` | `true`, `false` | Pause every scheduled sync |
+| `auditRetentionDays` | Audit | 180 | 1 – 3650 | Older audit entries are removed |
+
+## Examples
+
+<Tabs>
+<TabItem label="Stricter sign-in">
+
+```yaml title="linea.config.yml"
+instance:
+  sessionHours: 8          # a working day
+  maxFailedSignIns: 5
+  lockMinutes: 30
+  minPasswordLength: 14
+```
+
+</TabItem>
+<TabItem label="Locked-down registry">
+
+Only administrators may publish or change the registry, so every module version has been reviewed.
+
+```yaml title="linea.config.yml"
+instance:
+  modulesPublish: admins
+  modulesRegister: admins
+```
+
+</TabItem>
+<TabItem label="Busy scheduler">
+
+```yaml title="linea.config.yml"
+instance:
+  syncConcurrency: 6
+  schedulerPaused: false
+```
+
+</TabItem>
+</Tabs>
+
+<Aside type="tip" title="See what is set">
+The Configuration view shows each setting with where its value came from (default, saved or file) and locks the ones the file sets. Download the current choices as a file from the Plugins view's **Download config**.
+</Aside>
+
+## Why these matter
+
+- **Lockout** counts per person *and* address, so one attacker cannot lock a colleague out from another machine.
+- **`modulesPublish`** matters because packages carry scripts that run **without isolation** on the server and in the browser. Restricting who publishes (and which groups are trusted, see [the registry](/configure/registry/)) limits that risk.
+- **`sessionHours`** applies to LINEA's own session. GitLab tokens last about two hours and are refreshed automatically.

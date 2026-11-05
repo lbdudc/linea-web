@@ -1,0 +1,353 @@
+---
+import Icon from '../Icon.astro';
+
+// Real content from the sample registry (modules/*/.linea and code/).
+type Mod = {
+	id: string; label: string; cls: string; version: string;
+	desc: string; requires: string[]; metamodels: string[]; offers?: string;
+	uvl: string; file: string; code: string; why: string; tree: string[];
+};
+const modules: Mod[] = [
+	{
+		id: 'main-component', label: 'main-component', cls: 'cb', version: '0.4.0',
+		desc: 'The web application every product is: shared server and client, tools (GIS, payments, mail…), deployment files and the shared transformation of the product specification.',
+		requires: [], metamodels: ['basic ^3.0.0', 'featuremodel ^1.0.0'],
+		uvl: `features
+    WebApplication
+        mandatory
+            Tools
+                optional
+                    T_MailSender
+                optional
+                    T_Swagger
+                optional
+                    T_Payments
+                        or
+                            T_P_PayPal
+                            T_P_RedSys
+                mandatory
+                    T_GIS`,
+		file: 'code/server/build.cipmain.gradle',
+		code: `/*% if (feature.T_Swagger) { %*/
+implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+/*% } %*/`,
+		why: 'Only products that select T_Swagger get the Swagger UI dependency.',
+		tree: ['.linea/module.json', '.linea/model.uvl', '.linea/config/', 'code/server/', 'code/client/', 'code/deploy/'],
+	},
+	{
+		id: 'user-management', label: 'user-management', cls: 'cv', version: '0.1.3',
+		desc: 'Users, authentication, registration and capabilities. It also offers the entities UMUser and Authority to the data model of every product that uses it.',
+		requires: ['main-component ^0.4.0'], metamodels: ['datamodel ^1.0.0', 'basic ^3.0.0'],
+		offers: `entity UMUser display "$login" {
+  property login: String required unique max 50
+  property email: String unique max 100
+  relation authorities -> Authority multiple
+}`,
+		uvl: `features
+    UserManagement
+        optional
+            UM_Registration
+                or
+                    UM_R_ByAdmin
+                    UM_R_Anonymous
+        mandatory
+            UM_Authentication
+                optional
+                    UM_A_RecoverPass`,
+		file: 'code/server/…/SecurityConfiguration.cipmain.java',
+		code: `/*% if (feature.UM_R_Anonymous) { %*/
+.requestMatchers(HttpMethod.POST, "/api/register")
+.permitAll()
+/*% } %*/`,
+		why: 'Anonymous registration is only open when UM_R_Anonymous is selected.',
+		tree: ['.linea/module.json', '.linea/model.uvl', 'models/datamodel.instance', 'code/server/', 'code/client/'],
+	},
+	{
+		id: 'map-viewer', label: 'map-viewer', cls: 'cc', version: '0.2.2',
+		desc: 'The map viewer: map server, tools, context information and layer management.',
+		requires: ['main-component ^0.4.0', 'data-management ^0.1.0'], metamodels: ['gismodel ^2.0.0'],
+		uvl: `features
+    MapViewer
+        mandatory
+            MV_MapServer
+                or
+                    MV_MS_GeoServer
+                    MV_MS_GeoJSON
+        mandatory
+            MV_Tools
+                optional
+                    MV_T_ZoomWindow
+                optional
+                    MV_T_MeasureControl`,
+		file: 'code/server/README.cip.md',
+		code: `/*% if (feature.MV_MS_GeoServer) { %*/
+- Enable Cross-Origin Resource Sharing (CORS) following instructions below
+/*% } %*/`,
+		why: 'Even documentation is a template: the CORS note exists only with GeoServer.',
+		tree: ['.linea/module.json', '.linea/model.uvl', 'code/server/', 'code/client/'],
+	},
+	{
+		id: 'data-management', label: 'data-management', cls: 'cg', version: '0.1.2',
+		desc: 'Spatial database, identifier generation, data input and algorithmics.',
+		requires: ['main-component ^0.4.0'], metamodels: ['datamodel ^1.0.0'],
+		uvl: `features
+    DataManagement
+        mandatory
+            DM_SpatialDatabase
+                mandatory
+                    DM_SD_PostGIS
+        mandatory
+            DM_GenerationType
+                alternative
+                    DM_GT_Identity
+                    DM_GT_Sequence`,
+		file: 'code/server/build.cip.gradle',
+		code: `/*% if (feature.DM_DI_DF_CSV) { %*/
+implementation "com.opencsv:opencsv:4.4"
+/*% } %*/`,
+		why: 'The CSV library is added only when CSV import is selected.',
+		tree: ['.linea/module.json', '.linea/model.uvl', 'code/server/', 'code/client/'],
+	},
+	{
+		id: 'data-browser', label: 'data-browser', cls: 'ca', version: '0.1.2',
+		desc: 'Lists, detail and edit forms of the entities of the data model.',
+		requires: ['main-component ^0.4.0', 'data-management ^0.1.0'], metamodels: ['browser ^1.0.0'],
+		uvl: `features
+    DataBrowser
+        optional
+            GUI_Forms
+                optional
+                    GUI_F_Editable
+        optional
+            GUI_Lists
+                optional
+                    GUI_L_Sortable
+                optional
+                    GUI_L_Filterable
+                        alternative
+                            GUI_L_F_RowFilter
+                            GUI_L_F_BasicSearch`,
+		file: 'code/server/build.cip.gradle',
+		code: `/*% if (feature.GUI_L_Export) { %*/
+implementation "org.apache.poi:poi-ooxml:5.2.0"
+/*% } %*/`,
+		why: 'Excel export brings its library only when GUI_L_Export is selected.',
+		tree: ['.linea/module.json', '.linea/model.uvl', 'code/server/', 'code/client/'],
+	},
+];
+
+type Prod = { id: string; name: string; y: number; cls: string; feats: string[]; sel: string; line: string; result: string; because: string };
+const products: Prod[] = [
+	{
+		id: 'north', name: 'NorthRegion', y: 30, cls: 'cv', feats: ['Users', 'Maps'],
+		sel: `UserManagement
+    UM_Authentication
+    UM_Registration
+        UM_R_Anonymous
+MapViewer
+    MV_MapServer
+        MV_MS_GeoJSON
+    MV_Tools
+        MV_T_ZoomWindow`,
+		line: `/*% if (feature.UM_R_Anonymous) { %*/
+.requestMatchers(HttpMethod.POST, "/api/register")
+.permitAll()
+/*% } %*/`,
+		result: `.requestMatchers(HttpMethod.POST, "/api/register")
+.permitAll()`,
+		because: 'NorthRegion selects UM_R_Anonymous, so LINEA keeps the lines and drops the markers.',
+	},
+	{
+		id: 'south', name: 'SouthRegion', y: 180, cls: 'cc', feats: ['Users', 'Data'],
+		sel: `UserManagement
+    UM_Authentication
+    UM_Registration
+        UM_R_ByAdmin
+DataManagement
+    DM_GenerationType
+        DM_GT_Sequence
+DataBrowser
+    GUI_Lists
+        GUI_L_Sortable`,
+		line: `/*% if (feature.GUI_L_Export) { %*/
+implementation "org.apache.poi:poi-ooxml:5.2.0"
+/*% } %*/`,
+		result: `// nothing: GUI_L_Export is not selected`,
+		because: 'SouthRegion does not select GUI_L_Export, so the whole block disappears from its code.',
+	},
+	{
+		id: 'coastal', name: 'Coastal', y: 330, cls: 'cg', feats: ['Users', 'Maps', 'Data'],
+		sel: `UserManagement
+    UM_Authentication
+MapViewer
+    MV_MapServer
+        MV_MS_GeoServer
+DataManagement
+    DM_DataInput
+        DM_DI_DF_CSV`,
+		line: `/*% if (feature.DM_DI_DF_CSV) { %*/
+implementation "com.opencsv:opencsv:4.4"
+/*% } %*/`,
+		result: `implementation "com.opencsv:opencsv:4.4"`,
+		because: 'Coastal selects CSV import, so it gets the CSV library. With GeoServer it also gets the CORS note.',
+	},
+];
+const repoTree = ['src/  generated from the line', '.linea/spec.json  its selection', '.linea/models/  basic, datamodel, browser, featureselection, gismodel', 'branches: bigbang, main'];
+
+const flows = products.map((p) => `M548 230 C640 230 630 ${p.y + 55} 700 ${p.y + 55}`);
+
+// tiny build-time highlighter: annotations, strings, UVL and data-model keywords, `//` comments
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const hl = (s: string) =>
+	esc(s)
+		.split('\n')
+		.map((l) =>
+			l.replace(
+				/(\/\*%.*?%\*\/)|(\/\/.*$)|("[^"]*"|'[^']*')|\b(features|mandatory|optional|or|alternative|constraints|entity|property|relation|required|unique|implementation)\b/g,
+				(_m, ann, com, str, kw) =>
+					ann ? `<i class="t-ann">${ann}</i>` : com ? `<i class="t-ann">${com}</i>` : str ? `<i class="t-str">${str}</i>` : `<i class="t-kw">${kw}</i>`,
+			),
+		)
+		.join('\n');
+---
+<svg class="dg dg--pick" viewBox="0 0 1000 480" role="group" aria-label="A line made of five modules goes through LINEA, which generates three products. Select a module or a product for details.">
+	<!-- line card -->
+	<g class="cb">
+		<rect class="nd" x="20" y="20" width="300" height="440" rx="18" filter="url(#f-shadow)" />
+		<circle class="nd-badge" cx="56" cy="62" r="18" />
+		<g class="nd-ico" transform="translate(44 50)"><Icon name="layers" size={24} /></g>
+		<text class="dg-title" x="86" y="60">FieldService</text>
+		<text class="dg-sub" x="86" y="80">SPL · composed from modules</text>
+	</g>
+	{modules.map((m, i) => (
+		<g class:list={['dg-chip2', 'pick', m.cls]} style={`--i:${i}`} data-pick={`m-${m.id}`} role="button" tabindex="0" aria-pressed={i === 0 ? 'true' : 'false'} aria-label={`${m.label}, module`}>
+			<rect x="40" y={110 + i * 68} width="260" height="52" rx="12" />
+			<rect class="bar" x="40" y={110 + i * 68} width="6" height="52" rx="3" />
+			<g class="nd-ico2" transform={`translate(62 ${124 + i * 68})`}><Icon name="box" size={22} /></g>
+			<text x="98" y={141 + i * 68}>{m.label}</text>
+		</g>
+	))}
+
+	<!-- hub -->
+	<g class="dg-hub">
+		<circle class="ring r1" cx="500" cy="230" r="52" />
+		<circle class="ring r2" cx="500" cy="230" r="52" />
+		<circle cx="500" cy="230" r="46" fill="url(#g-core)" filter="url(#f-glow)" />
+		<g class="nd-ico" transform="translate(484 214)" style="color:#fff"><Icon name="cog" size={32} /></g>
+		<text x="500" y="306" text-anchor="middle" class="dg-title dg-title--s">LINEA</text>
+		<text x="500" y="326" text-anchor="middle" class="dg-sub">select features · generate</text>
+	</g>
+
+	<path class="dg-flow2" d="M322 230 H450" marker-end="url(#m-arr)" />
+	<circle class="dg-dot2" r="5"><animateMotion dur="2.4s" repeatCount="indefinite" path="M322 230 H450" /></circle>
+	<circle class="dg-dot2" r="5"><animateMotion dur="2.4s" begin="1.2s" repeatCount="indefinite" path="M322 230 H450" /></circle>
+
+	{products.map((p, i) => (
+		<g class={p.cls}>
+			<path class="dg-flow2 dg-flow2--c" d={flows[i]} marker-end="url(#m-arr)" />
+			<circle class="dg-dot2 dg-dot2--c" r="5"><animateMotion dur="3s" begin={`${i * 0.7}s`} repeatCount="indefinite" path={flows[i]} /></circle>
+			<g class="dg-prod pick" style={`--i:${i}`} data-pick={`p-${p.id}`} role="button" tabindex="0" aria-pressed="false" aria-label={`${p.name}, product`}>
+				<rect class="nd" x="700" y={p.y} width="280" height="120" rx="16" filter="url(#f-shadow)" />
+				<circle class="nd-badge" cx="736" cy={p.y + 36} r="17" />
+				<g class="nd-ico" transform={`translate(724 ${p.y + 24})`}><Icon name="package" size={24} /></g>
+				<text class="dg-title dg-title--s" x="766" y={p.y + 34}>{p.name}</text>
+				<text class="dg-sub" x="766" y={p.y + 54}>own repository · own history</text>
+				{p.feats.map((f, j) => (
+					<g class="dg-feat2">
+						<rect x={722 + j * 82} y={p.y + 76} width="74" height="26" rx="13" />
+						<text x={722 + j * 82 + 37} y={p.y + 93} text-anchor="middle">{f}</text>
+					</g>
+				))}
+			</g>
+		</g>
+	))}
+</svg>
+
+<p class="ld__hint"><span class="pin pin--static"><span class="pin__n">+</span></span> Click a module or a product to see what is inside.</p>
+
+<div class="ld" id="line-detail">
+	{modules.map((m, i) => (
+		<section class:list={['ld__pane', m.cls]} id={`ld-m-${m.id}`} hidden={i !== 0}>
+			<header class="ld__head">
+				<span class="ld__badge"><Icon name="box" size={22} /></span>
+				<div><h3>{m.id}</h3><p><code>v{m.version}</code> · a module from the registry</p></div>
+			</header>
+			<div class="ld__grid">
+				<div class="ld__col">
+					<p class="ld__desc">{m.desc}</p>
+					<dl class="ld__facts">
+						<dt>Needs modules</dt><dd>{m.requires.length ? m.requires.map((r) => <code>{r}</code>) : <em>none</em>}</dd>
+						<dt>Needs metamodels</dt><dd>{m.metamodels.map((r) => <code>{r}</code>)}</dd>
+						<dt>Offers</dt><dd>{m.offers ? <span>a read-only model: <code>UMUser</code>, <code>Authority</code></span> : <em>nothing</em>}</dd>
+					</dl>
+					<h4>Files</h4>
+					<ul class="ld__tree">{m.tree.map((f) => <li><code>{f}</code></li>)}</ul>
+				</div>
+				<div class="ld__col">
+					<h4>Its part of the feature model <span>(UVL, <code>.linea/model.uvl</code>)</span></h4>
+					<pre class="ld__code"><code set:html={hl(m.uvl)} /></pre>
+				</div>
+			</div>
+			<h4>Annotated code <span><code>{m.file}</code></span></h4>
+			<pre class="ld__code"><code set:html={hl(m.code)} /></pre>
+			<p class="ld__why"><Icon name="check" size={16} />{m.why}</p>
+			{m.offers && (
+				<>
+					<h4>The model it offers <span>(<code>models/datamodel.instance</code>, read-only in products)</span></h4>
+					<pre class="ld__code"><code set:html={hl(m.offers)} /></pre>
+				</>
+			)}
+		</section>
+	))}
+
+	{products.map((p) => (
+		<section class:list={['ld__pane', p.cls]} id={`ld-p-${p.id}`} hidden>
+			<header class="ld__head">
+				<span class="ld__badge"><Icon name="package" size={22} /></span>
+				<div><h3>{p.name}</h3><p>a product · its own repository and history</p></div>
+			</header>
+			<div class="ld__grid">
+				<div class="ld__col">
+					<p class="ld__desc">A product is the line plus a <b>selection of features</b>. LINEA reads the selection and its models and writes the application into a repository of its own.</p>
+					<h4>Repository</h4>
+					<ul class="ld__tree">{repoTree.map((f) => <li><code>{f}</code></li>)}</ul>
+				</div>
+				<div class="ld__col">
+					<h4>What it selected <span>(a tree of the line's features)</span></h4>
+					<pre class="ld__code"><code set:html={hl(p.sel)} /></pre>
+				</div>
+			</div>
+			<h4>What that does to the code</h4>
+			<div class="ld__ba">
+				<div><span class="ld__tag">In the line</span><pre class="ld__code"><code set:html={hl(p.line)} /></pre></div>
+				<span class="ld__arrow" aria-hidden="true"><Icon name="arrow" size={20} /></span>
+				<div><span class="ld__tag ld__tag--out">In {p.name}</span><pre class="ld__code"><code set:html={hl(p.result)} /></pre></div>
+			</div>
+			<p class="ld__why"><Icon name="check" size={16} />{p.because}</p>
+		</section>
+	))}
+</div>
+
+<script>
+	const root = document.getElementById('line-detail');
+	if (root) {
+		const svg = document.querySelector<SVGElement>('svg.dg--pick')!;
+		const picks = [...svg.querySelectorAll<SVGGElement>('[data-pick]')];
+		const panes = [...root.querySelectorAll<HTMLElement>('.ld__pane')];
+		const show = (id: string) => {
+			picks.forEach((p) => {
+				const on = p.dataset.pick === id;
+				p.classList.toggle('is-picked', on);
+				p.setAttribute('aria-pressed', String(on));
+			});
+			panes.forEach((p) => { p.hidden = p.id !== `ld-${id}`; });
+		};
+		picks.forEach((p) => {
+			p.addEventListener('click', () => show(p.dataset.pick!));
+			p.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(p.dataset.pick!); }
+			});
+		});
+		show('m-main-component');
+	}
+</script>
