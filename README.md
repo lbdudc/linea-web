@@ -1,6 +1,8 @@
 # linea-web
 
-Landing y documentación de [LINEA](https://github.com/lbdudc/linea-web), construidas con [Astro](https://astro.build) + [Starlight](https://starlight.astro.build).
+The landing page and the documentation of [LINEA](https://github.com/lbdudc/linea), built with [Astro](https://astro.build) + [Starlight](https://starlight.astro.build). Live at **https://lbdudc.github.io/linea-web/**.
+
+The documentation describes the published artifacts: the Docker images (`ghcr.io/lbdudc/linea-*`), the npm packages (`@lbdudc/linea-*`), [`linea-plugins`](https://github.com/lbdudc/linea-plugins) and [`linea-metamodels`](https://github.com/lbdudc/linea-metamodels). When a release changes a command, an image name or a setting, update the pages that show it (`install/`, `get-started/`, `reference/`).
 
 ## Requirements
 
@@ -18,19 +20,22 @@ Landing y documentación de [LINEA](https://github.com/lbdudc/linea-web), constr
 ## Structure
 
 ```
+src/data/links.ts             # every outward link and install command of the landing (repositories, npm, GHCR): change a URL here once
 src/pages/index.astro         # landing page
 src/components/Configurator   # interactive feature configurator
 src/styles/                   # tokens (from the LINEA app), landing and Starlight theme
 src/content/docs/
-├── introduction.md
-├── fundamentals/             # what is LINEA, metamodels, modules
-├── setup/                    # installation, plugins
-├── usage/                    # getting started
-├── internals/                # creating an SPL, generating a product, CI/CD
-└── reference/                # glossary
+├── introduction.mdx
+├── get-started/              # quickstart (Docker)
+├── install/                  # Docker, command line and npm packages, development stack
+├── configure/                # git hosts, plugins, registry, settings, production checklist
+├── concepts/                 # what is LINEA, line types, feature models, metamodels, modules
+├── guides/                   # getting started with lines and products
+├── internals/                # creating an SPL, generating a product, CI/CD, releasing
+└── reference/                # environment variables, linea.config.yml, glossary
 ```
 
-The documentation comes from the project wiki of `linea/linea` on GitLab (October 2026), translated to English. Diagrams are written in ```` ```mermaid ```` blocks.
+The documentation started from the project wiki of the internal GitLab (October 2026), translated to English. Diagrams are written in ```` ```mermaid ```` blocks.
 
 ## Deploying to GitHub Pages
 
