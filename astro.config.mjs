@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import mermaid from 'astro-mermaid';
+import { links } from './src/data/links.ts';
 
 // https://astro.build/config
 // GitHub Pages serves a project site from https://<owner>.github.io/<repo>/. The workflow sets BASE_PATH=/linea-web;
@@ -48,7 +49,7 @@ export default defineConfig({
 			defaultLocale: 'root',
 			locales: { root: { label: 'English', lang: 'en' } },
 			social: [
-				{ icon: 'github', label: 'GitHub', href: 'https://github.com/lbdudc/linea-web' },
+				{ icon: 'github', label: 'GitHub', href: links.repo.linea },
 			],
 			editLink: { baseUrl: 'https://github.com/lbdudc/linea-web/edit/main/' },
 			lastUpdated: true,

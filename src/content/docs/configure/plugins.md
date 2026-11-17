@@ -5,6 +5,8 @@ sidebar:
   order: 12
 ---
 
+The official plugins live in [`lbdudc/linea-plugins`](https://github.com/lbdudc/linea-plugins), which also holds the catalog (`marketplace.json`) and how to write your own. The official Docker images already carry them.
+
 ## Definition
 
 A **plugin** is an optional capability added to LINEA without changing its core. The rule for deciding whether a feature should be a plugin is that **LINEA must work completely without it**. Essential functions (git servers, modules, registry) belong to the core or to configuration.
@@ -16,10 +18,8 @@ A plugin can provide server routes (`/api/plugins/<id>/…`), pages and menu ent
 | Plugin | Role | Runs |
 |---|---|---|
 | `analytics-plugin` | Feature model analysis with flamapy: satisfiability, dead features, false optionals and number of configurations. Adds a strip of figures and an analysis panel to the editor. | Routes and interface in LINEA, plus a Python service (FastAPI and flamapy) in its own container. |
-| `agents-plugin` | AI agents, reachable as pages under the **Agents** tab. Users sign in to LINEA only, which forwards calls to the agents service on their behalf. | Pages and a proxy in LINEA, and the `linea-agents` service (own repository and database, no authentication or web interface of its own), deployed independently. |
-| `hello-plugin` | A minimal reference example: one route, one menu entry and one setting of each type. | In LINEA. |
-
-The agents plugin only works with GitLab. Without an active GitLab host it stays disabled and hidden.
+| `agents-plugin` | AI agents, reachable as pages under the **Agents** tab. Users sign in to LINEA only, which forwards calls to the agents service on their behalf. | Pages and a proxy in LINEA, and its service (the `agents-plugin/service` folder, with its own database, no web, deployed apart; it reaches repositories through LINEA's API, whatever the git host). |
+| `spl-code-editor` | The **Code** tab of simple SPLs: file editor, feature to code annotations and a trial derivation without making a product. | Routes and interface in LINEA. |
 
 ## Installation and configuration
 
@@ -73,4 +73,4 @@ A plugin with its own service uses a **service key**: it sends `Authorization: S
 | A function LINEA does not need in order to operate (reports, integrations) | Plugin. |
 | A function required by every line (modules, generation) | Core. |
 
-More documentation: `plugins/README.md` and `linea/docs/linea/architecture.md`.
+More documentation: `plugins/README.md` and `docs/linea/architecture.md`.

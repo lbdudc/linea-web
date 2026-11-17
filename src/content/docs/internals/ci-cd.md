@@ -108,4 +108,4 @@ In a line composed of modules, `linea-ci` composes the platform from the git ser
 
 ## 4. Testing LINEA itself
 
-LINEA's code has tests in `linea/server` and `linea/client` (`npm test`), the `linea-core` and `linea-git` suites, and an end-to-end battery in Chrome (`linea/e2e`; `npm install && npm test`). The latter starts one stack per configuration (local only; GitLab only with analytics; GitHub only with hello; all three hosts; and a `linea.config.yml` that locks hosts and a plugin) and walks through it as an administrator and as an ordinary user.
+LINEA's code has tests in `apps/server` and `apps/client` (`npm test`), the `linea-core` and `linea-git` suites, and an end-to-end battery in Chrome (`e2e`; `npm install && npm test`). The latter starts one stack per configuration (local only; GitLab only with analytics; GitHub only with hello; all three hosts; and a `linea.config.yml` that locks hosts and a plugin) and walks through it as an administrator and as an ordinary user.

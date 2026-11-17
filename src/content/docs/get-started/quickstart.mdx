@@ -10,38 +10,30 @@ import { Steps, Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 This quickstart runs LINEA on your machine with the **`local` git host**: repositories live on the LINEA server, so you need no GitLab or GitHub account. You will sign in, create a line, add a product and generate it.
 
 <Aside type="note" title="What you need">
-Node.js 22, Git 2.38 or later, and the LINEA repositories checked out side by side (`linea`, `linea-core`, `linea-git`, `bango` and the registry folders `metamodels/` and `modules/`).
+Docker with Compose. (To run from source instead you need Node.js 22, Git 2.38 or later, and the `linea`, `linea-plugins` and `linea-metamodels` repositories checked out side by side: see [Development setup](/install/development/).)
 </Aside>
 
 ## 1. Start the stack
 
 <Steps>
 
-1. **Go to the server folder** and start MongoDB and the server. The helper script runs both in the background and keeps their data in `server/.dev-data/`.
+1. **Get the Compose files** and set your secrets. The defaults use the `local` git host.
 
    ```bash
-   cd linea/server
-   npm install
-   npm run dev:up
+   git clone https://github.com/lbdudc/linea
+   cd linea/deploy
+   cp .env.example .env     # change JWT_SIGN_KEY and LINEA_ADMIN_PASSWORD
    ```
 
-   When it is ready it prints the server address (`http://127.0.0.1:3000`).
-
-2. **Start the web client** in a second terminal. OAuth sends the browser back to the client address, so the client has to run on port `9000`.
+2. **Start it.** It pulls the published images (`ghcr.io/lbdudc/linea-server` and `linea-client`), MongoDB and a proxy.
 
    ```bash
-   cd linea/client
-   npm install
-   npx vite --port 9000 --strictPort
+   docker compose up -d
    ```
 
-3. **Open** [http://localhost:9000](http://localhost:9000) and sign in with the development account `dev` / `devdevdev`. It is an administrator.
+3. **Open** [http://localhost:9000](http://localhost:9000) and sign in as `admin` with the `LINEA_ADMIN_PASSWORD` you set. It is an administrator.
 
 </Steps>
-
-<Aside type="tip">
-Another program already uses MongoDB's port 27017? Move it with `MONGO_PORT=27018 npm run dev:up`. `SERVER_PORT` and `CLIENT_PORT` move the server and the client the same way.
-</Aside>
 
 ## 2. Create a line
 
@@ -49,12 +41,13 @@ Another program already uses MongoDB's port 27017? Move it with `MONGO_PORT=2701
 
 1. Open **Lines → Create SPL**.
 2. Enter a name (letters, digits, `.`, `-`, `_`), a version and a description.
-3. Choose the kind **Modular** and pick `main-component` and `user-management-component`. LINEA reports that the second needs the first and offers a button to add it.
-4. Save. LINEA resolves the versions, pins them in `linea.lock.json` and creates the line's repository.
+3. Choose the kind **Simple SPL**.
+4. Save. LINEA creates the line's repository.
+5. Open the **Feature model** tab and add a few features under the root (a feature model with only its root cannot be generated).
 
 </Steps>
 
-Not sure which kind to choose? See [Line types](/concepts/line-types/).
+Not sure which kind to choose? See [Line types](/concepts/line-types/). **Modular** lines (the recommended kind for reuse) are made of modules from a [registry](/configure/registry/): the Docker image carries the metamodels but not the modules, so publish yours first.
 
 ## 3. Add a product and generate it
 

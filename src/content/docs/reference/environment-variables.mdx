@@ -7,7 +7,7 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 
-Set these in `linea/server/.env` (secrets), in `linea/deploy/.env` or `.env.prod` (Compose settings), or in the `environment:` block of the Compose file. The server reads them **at start**; in Docker, recreate the container after a change (`docker compose up -d --force-recreate server`).
+Set these in `apps/server/.env` (secrets), in `deploy/.env` or `.env.prod` (Compose settings), or in the `environment:` block of the Compose file. The server reads them **at start**; in Docker, recreate the container after a change (`docker compose up -d --force-recreate server`).
 
 A **Required** of *Yes* means LINEA will not work without it.
 
@@ -101,7 +101,7 @@ These go in `deploy/.env` or `.env.prod`, not in the server's env file.
 
 ## Development stack
 
-Used by `npm run dev:up` in `linea/server`.
+Used by `npm run dev:up` in `apps/server`.
 
 | Variable | Default | Description |
 |---|---|---|

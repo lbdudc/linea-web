@@ -107,4 +107,4 @@ A module's page includes a **Declaration** form to state the required metamodels
 
 `main-component`, `user-management-component`, `data-management-component`, `data-browser-component`, `graphical-user-interface-component`, `map-viewer-component`, `sensor-viewer-component` and `mobile-workflow-management-component`.
 
-Technical reference: `linea/docs/modules.md`.
+Technical reference: `docs/modules.md`.

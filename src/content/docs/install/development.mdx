@@ -7,11 +7,11 @@ sidebar:
 
 import { Steps, Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
-`linea/server/dev/` contains a complete stack for a laptop. It starts MongoDB, the server and, when you ask, a **fake GitLab or GitHub that lives in memory**. Nothing talks to a real service, so you can try the whole flow, including merge requests and OAuth sign-in, with no credentials.
+`apps/server/dev/` contains a complete stack for a laptop. It starts MongoDB, the server and, when you ask, a **fake GitLab or GitHub that lives in memory**. Nothing talks to a real service, so you can try the whole flow, including merge requests and OAuth sign-in, with no credentials.
 
 ## Start the backend
 
-`npm run dev:up` runs in `linea/server` and keeps logs and data under `.dev-data/`.
+`npm run dev:up` runs in `apps/server` and keeps logs and data under `.dev-data/`.
 
 <Tabs>
 <TabItem label="local host">
@@ -19,7 +19,7 @@ import { Steps, Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 Repositories stay on the server itself. Sign in as `dev` / `devdevdev`.
 
 ```bash
-cd linea/server
+cd apps/server
 npm run dev:up
 ```
 
@@ -56,7 +56,7 @@ GIT_HOSTS=local,gitlab,github npm run dev:up
 OAuth sends the browser back to `REDIRECT_URI`, so the client has to run on the port the server expects (9000 by default).
 
 ```bash
-cd linea/client
+cd apps/client
 npx vite --port 9000 --strictPort
 ```
 

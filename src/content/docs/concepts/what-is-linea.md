@@ -70,7 +70,7 @@ Each capability of LINEA belongs to exactly one of the following three categorie
 | `linea-cli` | Command line interface. |
 | `linea-mcp` | MCP server for using LINEA from AI assistants. |
 | `linea-ci` | Verification commands for SPLs and products (see [CI/CD](/internals/ci-cd/)). |
-| `plugins` | `analytics-plugin`, `agents-plugin` and `hello-plugin`. |
+| `plugins` | `analytics-plugin` and `agents-plugin`. |
 | `metamodels`, `modules` | Sample registry of publishable metamodels and modules. |
 | `linea-agents` | AI agents service, deployed independently. |
 
