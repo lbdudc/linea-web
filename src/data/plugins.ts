@@ -71,6 +71,6 @@ export const plugins: Plugin[] = [
 		needs: 'The MCP service: image ghcr.io/lbdudc/linea-mcp (docker-compose.plugins.yml of LINEA). For stdio-only clients: npx @lbdudc/linea-plugin-mcp',
 		tags: ['ai', 'mcp', 'claude', 'cursor', 'integration'],
 		source: src('mcp-plugin'),
-		docs: '/configure/plugins/#connect-an-ai-client',
+		docs: links.npm.mcp,
 	},
 ];
