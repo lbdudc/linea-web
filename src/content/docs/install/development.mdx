@@ -7,11 +7,23 @@ sidebar:
 
 import { Steps, Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
-`linea/server/dev/` contains a complete stack for a laptop. It starts MongoDB, the server and, when you ask, a **fake GitLab or GitHub that lives in memory**. Nothing talks to a real service, so you can try the whole flow, including merge requests and OAuth sign-in, with no credentials.
+`apps/server/dev/` contains a complete stack for a laptop. It starts MongoDB, the server and, when you ask, a **fake GitLab or GitHub that lives in memory**. Nothing talks to a real service, so you can try the whole flow, including merge requests and OAuth sign-in, with no credentials.
+
+## Get the sources
+
+LINEA is a monorepo, and the plugins and metamodels are two more repositories. Check them out side by side: the server and the client look for them next to `linea` (or in `PLUGINS_DIR` and `LINEA_METAMODELS_DIR`).
+
+```bash
+git clone https://github.com/lbdudc/linea
+git clone https://github.com/lbdudc/linea-plugins
+git clone https://github.com/lbdudc/linea-metamodels
+cd linea && npm install && npm run build   # one install for every package; build makes core and git, which the apps use
+(cd ../linea-plugins && ./install.sh)       # links the plugins to the dependencies of linea
+```
 
 ## Start the backend
 
-`npm run dev:up` runs in `linea/server` and keeps logs and data under `.dev-data/`.
+`npm run dev:up` runs in `apps/server` and keeps logs and data under `.dev-data/`.
 
 <Tabs>
 <TabItem label="local host">
@@ -19,7 +31,7 @@ import { Steps, Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 Repositories stay on the server itself. Sign in as `dev` / `devdevdev`.
 
 ```bash
-cd linea/server
+cd apps/server
 npm run dev:up
 ```
 
@@ -56,7 +68,7 @@ GIT_HOSTS=local,gitlab,github npm run dev:up
 OAuth sends the browser back to `REDIRECT_URI`, so the client has to run on the port the server expects (9000 by default).
 
 ```bash
-cd linea/client
+cd apps/client
 npx vite --port 9000 --strictPort
 ```
 

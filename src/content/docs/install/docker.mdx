@@ -7,7 +7,12 @@ sidebar:
 
 import { Steps, Tabs, TabItem, Aside, FileTree } from '@astrojs/starlight/components';
 
-The `linea/deploy/` folder contains a Compose file that starts everything: MongoDB (as a replica set), the LINEA server, the web client and a Traefik proxy.
+The `deploy/` folder of the [LINEA repository](https://github.com/lbdudc/linea) contains a Compose file that starts everything: MongoDB (as a replica set), the LINEA server, the web client and a Traefik proxy. It pulls the published images, `ghcr.io/lbdudc/linea-server` and `ghcr.io/lbdudc/linea-client` (amd64 and arm64), which already carry the official [plugins](/configure/plugins/) and the metamodels. Pin a version with `LINEA_VERSION=1.2.3` in `.env` (the default is `latest`).
+
+```bash
+git clone https://github.com/lbdudc/linea
+cd linea/deploy
+```
 
 <FileTree>
 
@@ -22,51 +27,48 @@ The `linea/deploy/` folder contains a Compose file that starts everything: Mongo
       - linea.config.yml  mounted at `/config` in the container
     - config-gitlab/
       - linea.config.yml  GitLab as the only git host
-  - server/
-    - .env.example  secrets: JWT key, OAuth
+  - apps/server/
+    - .env.example  GitLab or GitHub OAuth, when you use them (put your values in `.env.local`)
 
 </FileTree>
+
+## The images
+
+| Image | Carries |
+|---|---|
+| `ghcr.io/lbdudc/linea-server` | the API, the `local` git host, generation; the official plugins and the metamodels |
+| `ghcr.io/lbdudc/linea-client` | the web interface, built with the plugins' client code |
+| `ghcr.io/lbdudc/linea-flamapy` | the analysis service of the analytics plugin (`docker-compose.plugins.yml`) |
+| `ghcr.io/lbdudc/linea-agents` | the agents' service of the agents plugin |
+
+They are public and built for amd64 and arm64. Tags: the release version (`0.2.0`), `0.2` and `latest`.
 
 ## First start
 
 <Steps>
 
-1. **Create the server environment file.** It holds the secrets and is never committed.
-
-   ```bash
-   cd linea/server
-   cp .env.example .env
-   ```
-
-   Edit `.env` and set at least `JWT_SIGN_KEY` to a long random string:
-
-   ```bash
-   openssl rand -hex 32
-   ```
-
-2. **Create the Compose settings.**
+1. **Create the Compose settings.** `JWT_SIGN_KEY` signs the sessions: set it to a long random string (`openssl rand -hex 32`).
 
    <Tabs>
    <TabItem label="Local trial">
 
    ```bash
-   cd linea/deploy
    cp .env.example .env
    ```
 
-   The defaults serve LINEA on [http://localhost:9000](http://localhost:9000) with the `local` git host.
+   Edit `.env`: change `JWT_SIGN_KEY` and `LINEA_ADMIN_PASSWORD`. The defaults serve LINEA on [http://localhost:9000](http://localhost:9000) with the `local` git host.
 
    </TabItem>
    <TabItem label="Production">
 
    ```bash
-   cd linea/deploy
    cp .env.prod.example .env.prod
    ```
 
-   Set the public address and the administrators:
+   Set the key, the public address and the administrators:
 
    ```ini
+   JWT_SIGN_KEY=<openssl rand -hex 32>
    PROXY_PORT=18009
    NODE_ENV=production
    REDIRECT_URI=https://linea.example.com
@@ -77,7 +79,7 @@ The `linea/deploy/` folder contains a Compose file that starts everything: Mongo
    </TabItem>
    </Tabs>
 
-3. **Choose how people sign in.** With nothing configured LINEA uses the `local` host: set the first administrator in `deploy/.env`.
+2. **Choose how people sign in.** With nothing configured LINEA uses the `local` host: set the first administrator in `deploy/.env`.
 
    ```ini
    ADMIN_USERS=admin
@@ -86,27 +88,27 @@ The `linea/deploy/` folder contains a Compose file that starts everything: Mongo
 
    For GitLab or GitHub follow [Connect GitLab](/configure/gitlab-oauth/) or [Connect GitHub](/configure/github-oauth/) instead.
 
-4. **Start the stack.**
+3. **Start the stack.**
 
    <Tabs>
    <TabItem label="Local trial">
 
    ```bash
-   docker compose up --build -d
+   docker compose up -d
    ```
 
    </TabItem>
    <TabItem label="Production">
 
    ```bash
-   docker compose --env-file .env.prod up --build -d
+   docker compose --env-file .env.prod up -d
    ```
 
    </TabItem>
    <TabItem label="With plugins">
 
    ```bash
-   docker compose -f docker-compose.yml -f docker-compose.plugins.yml up -d --build
+   docker compose -f docker-compose.yml -f docker-compose.plugins.yml up -d
    ```
 
    Adds the flamapy analysis service used by the [analytics plugin](/configure/plugins/).
@@ -114,7 +116,7 @@ The `linea/deploy/` folder contains a Compose file that starts everything: Mongo
    </TabItem>
    </Tabs>
 
-5. **Open the address** you set in `REDIRECT_URI` ([http://localhost:9000](http://localhost:9000) by default) and sign in.
+4. **Open the address** you set in `REDIRECT_URI` ([http://localhost:9000](http://localhost:9000) by default) and sign in.
 
 </Steps>
 
@@ -123,8 +125,8 @@ The `linea/deploy/` folder contains a Compose file that starts everything: Mongo
 | Container | Image | Role |
 |---|---|---|
 | `splalm-mongo` | `mongo:8.2` | Database, started as replica set `rs0`. A one-shot container initiates the set. |
-| `splalm-server` | built from `linea/server` | API, engine, generation. Reads `server/.env` and the `environment:` block. |
-| `splalm-client` | built from `linea/client` | The web client. |
+| `splalm-server` | built from `apps/server` | API, engine, generation. Reads `server/.env` and the `environment:` block. |
+| `splalm-client` | built from `apps/client` | The web client. |
 | `splalm-proxy` | `traefik:v3.6` | Exposes `PROXY_PORT` and routes by labels. |
 | `splalm-flamapy` | built from `plugins/analytics-plugin/service` | Only with `docker-compose.plugins.yml`. |
 
@@ -161,8 +163,11 @@ See [linea.config.yml](/reference/linea-config-yml/) for the format.
 
 ```bash
 git pull
-cd linea/deploy
-docker compose --env-file .env.prod up --build -d
+cd deploy
+docker compose --env-file .env.prod up -d
 ```
 
 MongoDB and the repositories live in volumes, so rebuilding keeps your data.
+
+
+Building the images yourself (to run a change): check out [`linea-plugins`](https://github.com/lbdudc/linea-plugins) and [`linea-metamodels`](https://github.com/lbdudc/linea-metamodels) next to `linea`, and run `docker compose up -d --build`.
