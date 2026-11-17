@@ -601,26 +601,37 @@ g[fill='url(#g-core)'] ~ .nd-ico,.dg .nd-ico{color:var(--on-c)}
 .chip:hover{color:var(--ln-text)}
 .chip.is-on{background:var(--ln-highlight);border-color:var(--ln-primary);color:var(--ln-text)}
 .mkt-list{padding:16px 0 40px}
-.mkt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:20px}
-.mkt-card{display:flex;flex-direction:column;gap:12px;padding:24px;border:1px solid var(--ln-border);border-radius:14px;background:var(--ln-card);color:var(--ln-body);transition:border-color .2s,transform .2s}
-.mkt-card:hover{border-color:var(--ln-primary);transform:translateY(-2px)}
+.mkt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px}
+.mkt-card{display:flex;flex-direction:column;gap:10px;padding:18px;border:1px solid var(--ln-border);border-radius:14px;background:var(--ln-card);color:var(--ln-body);transition:border-color .2s}
+.mkt-card:hover,.mkt-card.is-open{border-color:var(--ln-primary)}
 .mkt-card[hidden]{display:none}
-.mkt-card header{display:flex;gap:14px;align-items:center}
-.mkt-card h2{margin:0;font-size:1.15rem;color:var(--ln-text)}
-.mkt-card code{font-family:var(--ln-mono);font-size:.8rem;color:var(--ln-muted)}
-.mkt-ic{display:grid;place-items:center;width:44px;height:44px;border-radius:10px;background:var(--ln-grad);color:#fff;flex:none}
+.mkt-card.is-open{grid-column:1/-1}
+.mkt-card header{display:flex;gap:12px;align-items:center}
+.mkt-card h2{margin:0;font-size:1.02rem;line-height:1.25;color:var(--ln-text)}
+.mkt-card code{font-family:var(--ln-mono);font-size:.76rem;color:var(--ln-muted)}
+.mkt-ic{display:grid;place-items:center;width:38px;height:38px;border-radius:9px;background:var(--ln-grad);color:#fff;flex:none}
 .mkt-card p{margin:0}
-.mkt-sum{color:var(--ln-text);font-weight:500}
-.mkt-card ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:.93rem}
-.mkt-card li{display:flex;gap:8px;align-items:center}
-.mkt-card li .icon{color:var(--ln-ok);flex:none}
+.mkt-sum{color:var(--ln-body);font-size:.92rem;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mkt-card.is-open .mkt-sum{-webkit-line-clamp:unset;display:block}
+.mkt-card footer{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:auto}
+.mkt-tags{display:flex;gap:5px;flex-wrap:wrap;min-width:0}
+.mkt-tags span{padding:1px 8px;border-radius:999px;background:var(--ln-raised);font-size:.74rem;color:var(--ln-muted)}
+.mkt-more{display:inline-flex;align-items:center;gap:5px;flex:none;background:none;border:0;color:var(--ln-primary);font:inherit;font-size:.86rem;font-weight:500;cursor:pointer;padding:4px 0}
+.mkt-more .icon{transition:transform .2s}
+.mkt-more[aria-expanded="true"] .icon{transform:rotate(90deg)}
+.mkt-info{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;padding-top:14px;border-top:1px solid var(--ln-border)}
+.mkt-info[hidden]{display:none}
+.mkt-info:not(:has(.mkt-shot)){grid-template-columns:1fr}
+.mkt-info__text{display:grid;gap:12px;align-content:start}
+.mkt-info ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:.93rem}
+.mkt-info li{display:flex;gap:8px;align-items:center}
+.mkt-info li .icon{color:var(--ln-ok);flex:none}
 .mkt-needs{font-size:.88rem;color:var(--ln-muted)}
 .mkt-needs b{color:var(--ln-text);font-weight:500}
-.mkt-card footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-top:auto;padding-top:12px;border-top:1px solid var(--ln-border)}
-.mkt-tags{display:flex;flex-wrap:wrap;gap:6px}
-.mkt-tags span{padding:2px 9px;border-radius:999px;background:var(--ln-raised);font-size:.78rem;color:var(--ln-muted)}
-.mkt-links{display:flex;gap:14px;font-size:.9rem}
+.mkt-links{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.9rem;color:var(--ln-muted)}
 .mkt-links a{color:var(--ln-primary)}
+.mkt-shot{margin:0;border-radius:10px}
+@media (max-width:800px){.mkt-info{grid-template-columns:1fr}}
 .mkt-empty{margin-top:24px;color:var(--ln-muted)}
 .mkt-how{padding:32px 0 88px}
 .mkt-how h2{margin-bottom:20px}
@@ -631,6 +642,5 @@ g[fill='url(#g-core)'] ~ .nd-ico,.dg .nd-ico{color:var(--on-c)}
 .mkt-steps p{margin:4px 0 0;font-size:.93rem;color:var(--ln-muted)}
 .mkt-how>.wrap>p{max-width:70ch;color:var(--ln-body)}
 .mkt-how a{color:var(--ln-primary)}
-.mkt-shot{margin:-4px 0 4px;border-radius:10px}
 .mkt-catalog{margin:0 0 28px}
 .mkt-catalog img{object-position:top center}
