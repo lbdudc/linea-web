@@ -66,11 +66,11 @@ export const plugins: Plugin[] = [
 		summary: 'Use a line from an AI client (Claude, Cursor…) over the Model Context Protocol.',
 		purpose:
 			'Lets an AI assistant read and edit a line (its feature model, products and generations) as the person who connects, so permissions, validation and git stay LINEA’s.',
-		features: ['Tools for the feature model, products and generation', 'Read-only mode', 'Works with Claude Desktop, Claude Code, Cursor'],
-		runs: 'service',
-		needs: 'The npm package @lbdudc/linea-plugin-mcp (needs Node.js)',
+		features: ['One endpoint per line: /mcp/<line id>', 'Tools for the feature model, products and generation', 'Read-only mode (?readonly=true)', 'Acts as the person who connects: their token on every request'],
+		runs: 'in LINEA + service',
+		needs: 'The MCP service: image ghcr.io/lbdudc/linea-mcp (docker-compose.plugins.yml of LINEA). For stdio-only clients: npx @lbdudc/linea-plugin-mcp',
 		tags: ['ai', 'mcp', 'claude', 'cursor', 'integration'],
 		source: src('mcp-plugin'),
-		docs: links.npm.mcp,
+		docs: '/configure/plugins/#connect-an-ai-client',
 	},
 ];
