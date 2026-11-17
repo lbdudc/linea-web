@@ -1,0 +1,100 @@
+---
+import Landing from '../layouts/Landing.astro';
+import Icon from '../components/Icon.astro';
+import { links } from '../data/links';
+import { plugins } from '../data/plugins';
+const steps = [
+	['Install', 'The official images already carry these plugins. Nothing to download.'],
+	['Switch on', 'An administrator opens Configuration → Plugins and enables the ones the team needs. No restart.'],
+	['Configure', 'Each plugin lists its own settings there (a service address, a limit…) and the health of its service.'],
+];
+---
+<Landing
+	title="LINEA plugins"
+	description="The plugins of LINEA: analysis of the feature model, AI agents, a code editor for simple SPLs and an MCP server. Search the catalog and see what each one is for."
+>
+	<section class="mkt-hero">
+		<div class="wrap">
+			<p class="mkt-kicker"><Icon name="plug" size={16} /> Plugin marketplace</p>
+			<h1>Add what your team needs. Leave the rest off.</h1>
+			<p class="hero__lead">The core of LINEA is lines, products, generation and git. Everything optional is a plugin: you switch it on or off from the web app, without restarting anything.</p>
+			<label class="mkt-search">
+				<Icon name="search" size={18} />
+				<input id="q" type="search" placeholder="Search plugins: ai, editor, analysis, mcp…" autocomplete="off" aria-label="Search plugins" />
+				<span id="count" class="mkt-count" aria-live="polite"></span>
+			</label>
+			<div class="mkt-filters" id="filters" role="group" aria-label="Where it runs">
+				<button type="button" class="chip is-on" data-run="">All</button>
+				<button type="button" class="chip" data-run="in LINEA">In LINEA</button>
+				<button type="button" class="chip" data-run="in LINEA + service">With a service</button>
+				<button type="button" class="chip" data-run="service">Standalone</button>
+			</div>
+		</div>
+	</section>
+
+	<section class="mkt-list">
+		<div class="wrap">
+			<div class="mkt-grid" id="grid">
+				{plugins.map((p) => (
+					<article class="mkt-card" data-run={p.runs} data-text={[p.name, p.id, p.summary, p.purpose, ...p.tags, ...p.features].join(' ').toLowerCase()}>
+						<header>
+							<span class="mkt-ic"><Icon name={p.icon} size={22} /></span>
+							<div>
+								<h2>{p.name}</h2>
+								<code>{p.id}</code>
+							</div>
+						</header>
+						<p class="mkt-sum">{p.summary}</p>
+						<p>{p.purpose}</p>
+						<ul>{p.features.map((f) => <li><Icon name="check" size={14} />{f}</li>)}</ul>
+						{p.needs && <p class="mkt-needs"><b>Needs:</b> {p.needs}</p>}
+						<footer>
+							<span class="mkt-tags">{p.tags.map((t) => <span>{t}</span>)}</span>
+							<span class="mkt-links">
+								<a href={p.source}>Source</a>
+								{p.docs && <a href={p.docs}>npm</a>}
+							</span>
+						</footer>
+					</article>
+				))}
+			</div>
+			<p class="mkt-empty" id="empty" hidden>No plugin matches. Try another word, or <a href={links.issues}>propose one</a>.</p>
+		</div>
+	</section>
+
+	<section class="mkt-how">
+		<div class="wrap">
+			<h2>Using a plugin</h2>
+			<ol class="mkt-steps">{steps.map(([t, d], i) => <li><span>{i + 1}</span><div><b>{t}</b><p>{d}</p></div></li>)}</ol>
+			<p>Your own folder of plugins works the same way: point <code>PLUGINS_DIR</code> at it. A plugin is a folder with a <code>plugin.json</code>; the catalog is
+				<a href={links.plugins.catalog}><code>marketplace.json</code></a>. See <a href="/configure/plugins/">Configure plugins</a> and the <a href={links.repo.plugins}>plugins repository</a> to write one.</p>
+		</div>
+	</section>
+
+	<script>
+		const q = document.getElementById('q') as HTMLInputElement;
+		const cards = [...document.querySelectorAll<HTMLElement>('.mkt-card')];
+		const chips = [...document.querySelectorAll<HTMLButtonElement>('#filters .chip')];
+		let run = '';
+		const apply = () => {
+			const words = q.value.toLowerCase().split(/\s+/).filter(Boolean);
+			let n = 0;
+			for (const c of cards) {
+				const ok = (!run || c.dataset.run === run) && words.every((w) => c.dataset.text!.includes(w));
+				c.hidden = !ok;
+				if (ok) n++;
+			}
+			document.getElementById('empty')!.hidden = n > 0;
+			document.getElementById('count')!.textContent = `${n} of ${cards.length}`;
+		};
+		q.addEventListener('input', apply);
+		chips.forEach((b) => b.addEventListener('click', () => {
+			run = b.dataset.run ?? '';
+			chips.forEach((x) => x.classList.toggle('is-on', x === b));
+			apply();
+		}));
+		const initial = new URLSearchParams(location.search).get('q');
+		if (initial) q.value = initial;
+		apply();
+	</script>
+</Landing>
