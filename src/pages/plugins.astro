@@ -37,26 +37,28 @@ const steps = [
 		<div class="wrap">
 			<div class="mkt-grid" id="grid">
 				{plugins.map((p) => (
-					<article class="mkt-card" data-run={p.runs} data-text={[p.name, p.id, p.summary, p.purpose, ...p.tags, ...p.features].join(' ').toLowerCase()}>
+					<article class="mkt-card" id={p.id} data-run={p.runs} data-text={[p.name, p.id, p.summary, p.purpose, ...p.tags, ...p.features].join(' ').toLowerCase()}>
 						<header>
-							<span class="mkt-ic"><Icon name={p.icon} size={22} /></span>
+							<span class="mkt-ic"><Icon name={p.icon} size={20} /></span>
 							<div>
 								<h2>{p.name}</h2>
 								<code>{p.id}</code>
 							</div>
 						</header>
-						{p.shot && <Shot name={p.shot.name} alt={p.shot.alt} ratio="1470/560" sizes="(min-width: 900px) 560px, 100vw" class="mkt-shot" />}
 						<p class="mkt-sum">{p.summary}</p>
-						<p>{p.purpose}</p>
-						<ul>{p.features.map((f) => <li><Icon name="check" size={14} />{f}</li>)}</ul>
-						{p.needs && <p class="mkt-needs"><b>Needs:</b> {p.needs}</p>}
 						<footer>
-							<span class="mkt-tags">{p.tags.map((t) => <span>{t}</span>)}</span>
-							<span class="mkt-links">
-								<a href={p.source}>Source</a>
-								{p.docs && <a href={p.docs}>npm</a>}
-							</span>
+							<span class="mkt-tags">{p.tags.slice(0, 3).map((t) => <span>{t}</span>)}</span>
+							<button type="button" class="mkt-more" aria-expanded="false" aria-controls={`${p.id}-info`}>More info <Icon name="arrow" size={14} /></button>
 						</footer>
+						<div class="mkt-info" id={`${p.id}-info`} hidden>
+							{p.shot && <Shot name={p.shot.name} alt={p.shot.alt} ratio="1470/802" sizes="(min-width: 900px) 600px, 100vw" class="mkt-shot" />}
+							<div class="mkt-info__text">
+								<p>{p.purpose}</p>
+								<ul>{p.features.map((f) => <li><Icon name="check" size={14} />{f}</li>)}</ul>
+								{p.needs && <p class="mkt-needs"><b>Needs:</b> {p.needs}</p>}
+								<p class="mkt-links"><span>Runs: {p.runs}</span><a href={p.source}>Source</a>{p.docs && <a href={p.docs}>npm</a>}</p>
+							</div>
+						</div>
 					</article>
 				))}
 			</div>
@@ -96,8 +98,18 @@ const steps = [
 			chips.forEach((x) => x.classList.toggle('is-on', x === b));
 			apply();
 		}));
+		document.querySelectorAll<HTMLButtonElement>('.mkt-more').forEach((b) => b.addEventListener('click', () => {
+			const card = b.closest('.mkt-card') as HTMLElement;
+			const open = b.getAttribute('aria-expanded') !== 'true';
+			b.setAttribute('aria-expanded', String(open));
+			b.firstChild!.textContent = open ? 'Less ' : 'More info ';
+			(card.querySelector('.mkt-info') as HTMLElement).hidden = !open;
+			card.classList.toggle('is-open', open);
+		}));
 		const initial = new URLSearchParams(location.search).get('q');
 		if (initial) q.value = initial;
 		apply();
+		const hash = location.hash.slice(1);
+		if (hash) (document.querySelector(`#${CSS.escape(hash)} .mkt-more`) as HTMLButtonElement | null)?.click();
 	</script>
 </Landing>
