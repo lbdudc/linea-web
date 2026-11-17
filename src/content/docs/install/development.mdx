@@ -9,6 +9,18 @@ import { Steps, Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
 `apps/server/dev/` contains a complete stack for a laptop. It starts MongoDB, the server and, when you ask, a **fake GitLab or GitHub that lives in memory**. Nothing talks to a real service, so you can try the whole flow, including merge requests and OAuth sign-in, with no credentials.
 
+## Get the sources
+
+LINEA is a monorepo, and the plugins and metamodels are two more repositories. Check them out side by side: the server and the client look for them next to `linea` (or in `PLUGINS_DIR` and `LINEA_METAMODELS_DIR`).
+
+```bash
+git clone https://github.com/lbdudc/linea
+git clone https://github.com/lbdudc/linea-plugins
+git clone https://github.com/lbdudc/linea-metamodels
+cd linea && npm install && npm run build   # one install for every package; build makes core and git, which the apps use
+(cd ../linea-plugins && ./install.sh)       # links the plugins to the dependencies of linea
+```
+
 ## Start the backend
 
 `npm run dev:up` runs in `apps/server` and keeps logs and data under `.dev-data/`.

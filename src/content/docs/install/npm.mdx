@@ -1,0 +1,59 @@
+---
+title: Command line and npm packages
+description: "Install the LINEA terminal client and use the engine, the git host library and the CI steps from npm."
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+Every release of LINEA publishes five packages to [npm](https://www.npmjs.com/org/lbdudc). They share one version, the one of the release, and carry provenance (npm shows which workflow built them).
+
+| Package | What it is |
+|---|---|
+| [`@lbdudc/linea-cli`](https://www.npmjs.com/package/@lbdudc/linea-cli) | LINEA in the terminal: take lines and products onto your machine, work in your editor, push changes back as merge requests |
+| [`@lbdudc/linea-core`](https://www.npmjs.com/package/@lbdudc/linea-core) | The engine: feature models, module resolution, product derivation. No network, works offline |
+| [`@lbdudc/linea-git`](https://www.npmjs.com/package/@lbdudc/linea-git) | One interface over the `local` host, GitLab and GitHub |
+| [`@lbdudc/linea-ci`](https://www.npmjs.com/package/@lbdudc/linea-ci) | Commands for the CI of a line and its products |
+| [`@lbdudc/linea-plugin-sdk`](https://www.npmjs.com/package/@lbdudc/linea-plugin-sdk) | Helpers for writing [plugins](/configure/plugins/) |
+
+## The terminal client
+
+<Aside type="note" title="Needs Bun">
+The CLI runs on [Bun](https://bun.sh) (its terminal interface does), and it uses `git`. The libraries below run on Node 20.11 or later.
+</Aside>
+
+<Tabs>
+<TabItem label="Install">
+
+```bash
+bun add -g @lbdudc/linea-cli
+linea login          # the server and your git host
+linea get my-line    # the line and its products, as git clones
+```
+
+</TabItem>
+<TabItem label="Run once">
+
+```bash
+bunx @lbdudc/linea-cli
+```
+
+</TabItem>
+</Tabs>
+
+Run `linea help` for the commands. Every command also works inside the interactive window that `linea` alone opens.
+
+## The libraries
+
+```bash
+npm install @lbdudc/linea-core @lbdudc/linea-git
+```
+
+```js
+import { parseUvl } from '@lbdudc/linea-core';
+```
+
+In CI, `npx @lbdudc/linea-ci` runs the checks of a line (see [CI/CD](/internals/ci-cd/)).
+
+Pin a version with `@lbdudc/linea-core@0.2.0`. A prerelease (`-rc.1`) is published under the `next` tag.

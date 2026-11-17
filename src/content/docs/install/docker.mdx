@@ -32,6 +32,17 @@ cd linea/deploy
 
 </FileTree>
 
+## The images
+
+| Image | Carries |
+|---|---|
+| `ghcr.io/lbdudc/linea-server` | the API, the `local` git host, generation; the official plugins and the metamodels |
+| `ghcr.io/lbdudc/linea-client` | the web interface, built with the plugins' client code |
+| `ghcr.io/lbdudc/linea-flamapy` | the analysis service of the analytics plugin (`docker-compose.plugins.yml`) |
+| `ghcr.io/lbdudc/linea-agents` | the agents' service of the agents plugin |
+
+They are public and built for amd64 and arm64. Tags: the release version (`0.2.0`), `0.2` and `latest`.
+
 ## First start
 
 <Steps>
