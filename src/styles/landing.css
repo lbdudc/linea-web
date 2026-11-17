@@ -631,3 +631,6 @@ g[fill='url(#g-core)'] ~ .nd-ico,.dg .nd-ico{color:var(--on-c)}
 .mkt-steps p{margin:4px 0 0;font-size:.93rem;color:var(--ln-muted)}
 .mkt-how>.wrap>p{max-width:70ch;color:var(--ln-body)}
 .mkt-how a{color:var(--ln-primary)}
+.mkt-shot{margin:-4px 0 4px;border-radius:10px}
+.mkt-catalog{margin:0 0 28px}
+.mkt-catalog img{object-position:top center}

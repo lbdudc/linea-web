@@ -1,6 +1,7 @@
 ---
 import Landing from '../layouts/Landing.astro';
 import Icon from '../components/Icon.astro';
+import Shot from '../components/Shot.astro';
 import { links } from '../data/links';
 import { plugins } from '../data/plugins';
 const steps = [
@@ -44,6 +45,7 @@ const steps = [
 								<code>{p.id}</code>
 							</div>
 						</header>
+						{p.shot && <Shot name={p.shot.name} alt={p.shot.alt} ratio="1470/560" sizes="(min-width: 900px) 560px, 100vw" class="mkt-shot" />}
 						<p class="mkt-sum">{p.summary}</p>
 						<p>{p.purpose}</p>
 						<ul>{p.features.map((f) => <li><Icon name="check" size={14} />{f}</li>)}</ul>
@@ -65,6 +67,7 @@ const steps = [
 	<section class="mkt-how">
 		<div class="wrap">
 			<h2>Using a plugin</h2>
+			<Shot name="plugin-catalog" ratio="1470/802" alt="Configuration, Plugins, Catalog: each plugin with its status, whether its service is up, and Install, Enable, Configure buttons" class="mkt-catalog" />
 			<ol class="mkt-steps">{steps.map(([t, d], i) => <li><span>{i + 1}</span><div><b>{t}</b><p>{d}</p></div></li>)}</ol>
 			<p>Your own folder of plugins works the same way: point <code>PLUGINS_DIR</code> at it. A plugin is a folder with a <code>plugin.json</code>; the catalog is
 				<a href={links.plugins.catalog}><code>marketplace.json</code></a>. See <a href="/configure/plugins/">Configure plugins</a> and the <a href={links.repo.plugins}>plugins repository</a> to write one.</p>

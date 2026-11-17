@@ -16,6 +16,8 @@ export interface Plugin {
 	tags: string[];
 	source: string;
 	docs?: string;
+	/** A screenshot of src/assets/screens (<name>-dark.jpg / <name>-light.jpg) and what it shows. */
+	shot?: { name: string; alt: string };
 }
 
 const src = (dir: string) => `${links.repo.plugins}/tree/main/${dir}`;
@@ -33,6 +35,7 @@ export const plugins: Plugin[] = [
 		needs: 'The flamapy service: image ghcr.io/lbdudc/linea-flamapy (docker-compose.plugins.yml of LINEA)',
 		tags: ['analysis', 'feature model', 'flamapy', 'quality'],
 		source: src('analytics-plugin'),
+		shot: { name: 'plugin-analysis', alt: 'The analysis panel under the feature model editor: figures of the model on the toolbar, satisfiability, dead and false-optional features' },
 	},
 	{
 		id: 'agents-plugin',
@@ -58,6 +61,7 @@ export const plugins: Plugin[] = [
 		runs: 'in LINEA',
 		tags: ['editor', 'code', 'annotations', 'derivation'],
 		source: src('spl-code-editor'),
+		shot: { name: 'plugin-code', alt: 'The Code tab of a line: file tree, editor and the annotation toolbar' },
 	},
 	{
 		id: 'mcp-plugin',
