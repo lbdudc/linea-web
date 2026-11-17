@@ -1,0 +1,10 @@
+---
+// Starlight's header: the site's own links (Plugins) before the GitHub icon.
+import Default from '@astrojs/starlight/components/SocialIcons.astro';
+---
+<a class="hdr-link" href="/plugins/">Plugins</a>
+<Default {...Astro.props}><slot /></Default>
+<style>
+	.hdr-link{color:var(--sl-color-gray-2);font-size:var(--sl-text-sm);text-decoration:none;margin-inline-end:.75rem}
+	.hdr-link:hover{color:var(--sl-color-white)}
+</style>

@@ -61,6 +61,7 @@ export default defineConfig({
 						"document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('.sl-markdown-content :not(pre)>code').forEach(function(c){var t=c.textContent.trim();var cell=c.closest('td,th');if(t.length<=30&&(cell||!/\s/.test(t)))c.classList.add('nw')})})",
 				},
 			],
+			components: { SocialIcons: './src/components/HeaderLinks.astro' },
 			tableOfContents: false,
 			customCss: ['./src/styles/starlight.css'],
 			sidebar: [
