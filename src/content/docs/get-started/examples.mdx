@@ -1,0 +1,65 @@
+---
+title: Start with the calculator example
+description: Run LINEA with the calculator modules from the linea-examples repository and generate a product from them.
+sidebar:
+  order: 2
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+[`lbdudc/linea-examples`](https://github.com/lbdudc/linea-examples) holds example lines. Its `calculator/` example is a calculator web app built as a **modular** line: four modules, and each product picks the operations it needs.
+
+| Module | Offers |
+|---|---|
+| `basic-module` | display, numeric keyboard, clear and the REST service that the operations fill in |
+| `basic-operations-module` | `add`, `subtract`, `multiply` |
+| `capabilities-module` | `decimal` numbers |
+| `advanced-operations-module` | `divide`, `power`, `square_root` (`divide` and `square_root` require `decimal`) |
+
+<Aside type="note" title="What you need">
+Docker with Compose, and the two repositories side by side. This page continues from the [Quickstart](/get-started/quickstart/); the only difference is that the calculator's modules are in the registry.
+</Aside>
+
+## 1. Start LINEA with the modules
+
+<Steps>
+
+1. **Clone both repositories** into the same folder.
+
+   ```bash
+   git clone https://github.com/lbdudc/linea
+   git clone https://github.com/lbdudc/linea-examples
+   ```
+
+2. **Start the stack** with the example's Compose file. It mounts `calculator/modules` into the server's registry, and the server publishes them into the `local` git host at start.
+
+   ```bash
+   cd linea/deploy
+   cp .env.example .env     # change JWT_SIGN_KEY and LINEA_ADMIN_PASSWORD
+   EXAMPLES_DIR=$(cd ../../linea-examples && pwd) \
+     docker compose -f docker-compose.yml -f ../../linea-examples/docker-compose.linea.yml up -d
+   ```
+
+3. **Open** [http://localhost:9000](http://localhost:9000) and sign in as `admin`.
+
+</Steps>
+
+The modules are listed because `.env.example` sets `LINEA_REGISTRY=local:registry/index`. With another registry, see [the package registry](/configure/registry/).
+
+## 2. Create the line and a product
+
+<Steps>
+
+1. Open **Modules** and check that the four calculator modules are there.
+2. Open **Lines → Create SPL**, choose the kind **Modular** and add the modules. The advanced and basic operations modules declare `basic-module` as a requirement; add it too if the line does not.
+3. In the line, **Create product** and tick the features it needs, for example `add`, `decimal` and `divide`. The tree rejects `divide` without `decimal`.
+4. Click **Generate product**, follow it in **Versions & syncs** and merge the `bigbang → main` request.
+
+</Steps>
+
+## Other hosts and from source
+
+- **GitLab or GitHub**: publish the modules into your group or organisation with `node scripts/publish-registry.mjs` (see [the package registry](/configure/registry/#publish-the-sample-registry)) using `--dir <linea-examples>/calculator`.
+- **From source**: set `REGISTRY_DIR` to `<linea-examples>/calculator` and `LINEA_REGISTRY=local:registry/index` in `apps/server/.env`.
+
+The `calculator/spls/` folder has two exported lines (`spl-calculator`, simple, and `project-calculator`, project) as reference. They point at `gitlab:linea/metamodels/featuremodel`, so on another host create the line from the modules instead.
