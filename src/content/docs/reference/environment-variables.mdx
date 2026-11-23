@@ -74,10 +74,15 @@ A **Required** of *Yes* means LINEA will not work without it.
 |---|---|---|---|
 | `LINEA_PLUGINS` | No | none | Comma-separated plugin ids to install and enable at start **when nobody has decided yet** |
 | `PLUGINS_DIR` | No | `plugins/` next to `linea/` | Folder of plugins |
-| `FLAMAPY_API_URL` | No | `http://splalm-flamapy:8000` | analytics-plugin: flamapy analysis service. Use `http://127.0.0.1:8000` outside Docker |
-| `AGENTS_URL` | No | `http://host.docker.internal:3001` | agents-plugin: where its service is, for LINEA |
-| `AGENTS_WEB_URL` | No | none | agents-plugin: where it is, for the browser |
-| `AGENTS_SERVICE_KEY` | No | none | agents-plugin: key shared by LINEA and the service |
+| `LINEA_INTERNAL_URL` | No | `http://host.docker.internal:<port>` | Where a plugin's Docker service reaches LINEA from its container (passed to its compose file) |
+
+The variables below are **settings of the plugins**, named by each plugin's manifest and read when the setting is not saved in the Plugins view or `linea.config.yml`. LINEA's own compose file does not set them; a plugin's `linea.compose.yml` does when LINEA runs in Docker.
+
+| Variable | Default | Plugin setting |
+|---|---|---|
+| `FLAMAPY_API_URL` | `http://localhost:8000` | analytics-plugin `url`: the flamapy analysis service (`http://flamapy-server:8000` in Docker) |
+| `AGENTS_URL` | `http://localhost:3001` | agents-plugin `url`: where its service is, for LINEA |
+| `AGENTS_SERVICE_KEY` | none | agents-plugin `serviceKey`: key shared by LINEA and the service |
 
 ## Webhooks and events
 

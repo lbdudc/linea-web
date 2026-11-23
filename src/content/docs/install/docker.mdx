@@ -19,7 +19,6 @@ cd linea/deploy
 - linea/
   - deploy/
     - docker-compose.yml
-    - docker-compose.plugins.yml  optional services (flamapy)
     - .env.example  copy to `.env` for local use
     - .env.prod.example  copy to `.env.prod` for production
     - linea.config.example.yml
@@ -38,7 +37,7 @@ cd linea/deploy
 |---|---|
 | `ghcr.io/lbdudc/linea-server` | the API, the `local` git host, generation; the official plugins and the metamodels |
 | `ghcr.io/lbdudc/linea-client` | the web interface, built with the plugins' client code |
-| `ghcr.io/lbdudc/linea-flamapy` | the analysis service of the analytics plugin (`docker-compose.plugins.yml`) |
+| `ghcr.io/lbdudc/linea-flamapy` | the analysis service of the analytics plugin (its `linea.compose.yml`) |
 | `ghcr.io/lbdudc/linea-agents` | the agents' service of the agents plugin |
 
 They are public and built for amd64 and arm64. Tags: the release version (`0.2.0`), `0.2` and `latest`.
@@ -108,10 +107,10 @@ They are public and built for amd64 and arm64. Tags: the release version (`0.2.0
    <TabItem label="With plugins">
 
    ```bash
-   docker compose -f docker-compose.yml -f docker-compose.plugins.yml up -d
+   docker compose -f docker-compose.yml -f ../../linea-plugins/analytics-plugin/linea.compose.yml up -d
    ```
 
-   Adds the flamapy analysis service used by the [analytics plugin](/configure/plugins/).
+   Adds the flamapy analysis service used by the [analytics plugin](/configure/plugins/), which ships the file itself (LINEA's compose file knows nothing of the plugins' services). Add one `-f` per plugin whose service you want. A LINEA run from a checkout starts these services itself when the plugin is enabled; see [Plugin services](/configure/plugins/#plugin-services).
 
    </TabItem>
    </Tabs>
@@ -128,7 +127,7 @@ They are public and built for amd64 and arm64. Tags: the release version (`0.2.0
 | `splalm-server` | built from `apps/server` | API, engine, generation. Reads `server/.env` and the `environment:` block. |
 | `splalm-client` | built from `apps/client` | The web client. |
 | `splalm-proxy` | `traefik:v3.6` | Exposes `PROXY_PORT` and routes by labels. |
-| `splalm-flamapy` | built from `plugins/analytics-plugin/service` | Only with `docker-compose.plugins.yml`. |
+| `flamapy-server` | `ghcr.io/lbdudc/linea-flamapy`, or built from `linea-plugins/analytics-plugin/service` | Only with the analytics plugin's `linea.compose.yml`. |
 
 Two named volumes keep your data: `mongo-data` and `repos-data` (the repositories of the `local` host, mounted at `/data/repos`).
 
