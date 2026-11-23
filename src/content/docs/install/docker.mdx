@@ -123,7 +123,7 @@ They are public and built for amd64 and arm64. Tags: the release version (`0.2.0
 
 | Container | Image | Role |
 |---|---|---|
-| `splalm-mongo` | `mongo:8.2` | Database, started as replica set `rs0`. A one-shot container initiates the set. |
+| `splalm-mongo` | `mongo:8.2` | Database, started as replica set `rs0`; its own health check initiates the set. |
 | `splalm-server` | built from `apps/server` | API, engine, generation. Reads `server/.env` and the `environment:` block. |
 | `splalm-client` | built from `apps/client` | The web client. |
 | `splalm-proxy` | `traefik:v3.6` | Exposes `PROXY_PORT` and routes by labels. |
