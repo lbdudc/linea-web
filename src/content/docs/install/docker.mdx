@@ -123,17 +123,23 @@ They are public and built for amd64 and arm64. Tags: the release version (`0.2.0
 
 | Container | Image | Role |
 |---|---|---|
-| `splalm-mongo` | `mongo:8.2` | Database, started as replica set `rs0`. A one-shot container initiates the set. |
-| `splalm-server` | built from `apps/server` | API, engine, generation. Reads `server/.env` and the `environment:` block. |
-| `splalm-client` | built from `apps/client` | The web client. |
+| `splalm-mongo` | `mongo:8.2` | Database, started as replica set `rs0`; its own health check initiates the set. |
+| `splalm-server` | built from `apps/server` | API, engine, generation. Reads `server/.env` and the `environment:` block. Runs as the unprivileged `node` user. |
+| `splalm-client` | built from `apps/client` | The web client: only the built files and a static server, as `node`. |
 | `splalm-proxy` | `traefik:v3.6` | Exposes `PROXY_PORT` and routes by labels. |
 | `flamapy-server` | `ghcr.io/lbdudc/linea-flamapy`, or built from `linea-plugins/analytics-plugin/service` | Only with the analytics plugin's `linea.compose.yml`. |
 
 Two named volumes keep your data: `mongo-data` and `repos-data` (the repositories of the `local` host, mounted at `/data/repos`).
 
-<Aside type="caution">
-The server container mounts the Docker socket (`/var/run/docker.sock`) so the playground runner can start containers. Treat access to the LINEA server like access to the Docker host, and do not expose the server port directly: only the proxy.
-</Aside>
+### What the containers run as
+
+- **No Docker socket.** The server container does not mount `/var/run/docker.sock` and the image has no Docker CLI, so a compromise of the server is not access to the Docker host. Only the proxy reads the socket, read-only, to route by labels. Do not expose the server port directly: only the proxy. (A plugin's service that needs the socket, such as the agents' playground, asks for it in its own compose file.)
+- **Not root.** The server and the client run as `node`. The server's entrypoint starts as root only for the moment it takes to hand the `repos-data` volume over to `node` (a volume made by an older, root image is fixed on the first start), then drops root. With `--user` or a rootless runtime it simply runs.
+- **Clean stops.** The server runs behind `init: true`, so `docker compose stop` takes a moment and the server exits cleanly, instead of waiting out the grace time and being killed.
+- **Logs rotate.** Every service keeps three files of 10 MB.
+- **Smaller images.** The server is `node:22-slim` plus git (the `local` host needs it), and the client is a build stage plus a slim runtime.
+- **The replica set.** MongoDB's own health check initiates the set (it is idempotent), so there is no init container to wait for.
+
 
 ## Changing configuration later
 
@@ -163,10 +169,10 @@ See [linea.config.yml](/reference/linea-config-yml/) for the format.
 ```bash
 git pull
 cd deploy
-docker compose --env-file .env.prod up -d
+docker compose --env-file .env.prod up -d --remove-orphans
 ```
 
-MongoDB and the repositories live in volumes, so rebuilding keeps your data.
+MongoDB and the repositories live in volumes, so rebuilding keeps your data. `--remove-orphans` takes away containers the compose file no longer has: updating from a version that had the `mongo-init-replica` container leaves it behind (stopped, harmless) without it.
 
 
 Building the images yourself (to run a change): check out [`linea-plugins`](https://github.com/lbdudc/linea-plugins) and [`linea-metamodels`](https://github.com/lbdudc/linea-metamodels) next to `linea`, and run `docker compose up -d --build`.

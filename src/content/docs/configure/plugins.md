@@ -41,7 +41,7 @@ LINEA reads `LINEA_SERVICE_KEYS`, `EVENT_WEBHOOK_SECRET`, `PLUGINS_DIR` (alterna
 
 ### Plugin services
 
-A plugin that needs a container declares the compose file that runs it in its manifest (`service`). **Enabling the plugin starts it** (`docker compose up -d --build`) and **disabling it stops it** (`stop`: the containers and their data stay). The card has **Start service** and **Stop service** buttons of their own, and shows the state of the containers:
+A plugin that needs a container declares the compose file that runs it in its manifest (`service`). **Enabling the plugin starts it** (`docker compose up -d --build --remove-orphans`: a container the compose file no longer has goes away) and **disabling it stops it** (`stop`: the containers and their data stay). The card has **Start service** and **Stop service** buttons of their own, and shows the state of the containers:
 
 | State | Meaning |
 |---|---|
@@ -50,7 +50,10 @@ A plugin that needs a container declares the compose file that runs it in its ma
 | Degraded | It is up, but a container crashed, was killed or is unhealthy. |
 | Failed | Nothing is up and a container crashed. |
 | Stopped | Nothing is up. |
-| Docker unavailable | The server has no Docker CLI or cannot reach the daemon. |
+| Docker unavailable | The server has no Docker CLI or cannot reach the daemon, and the service does not answer either. |
+| External | The server cannot see Docker (it is LINEA's own Docker image, say), but the service answers: it is run outside LINEA, and the start, stop and logs buttons are not shown. |
+
+If the plugin is on and its service does not answer, the card says so with the reason: with the containers up, *check its address in Configure, or the logs*; with no way to see them, *start it, or check the address*. While a start is in flight only "Starting" is shown.
 
 The **Logs** button opens a dialog with the containers (state, health, ports) and what they have said: pick one container or all, the last 100 to 2000 lines, follow them live, copy them. Secrets of the plugin's settings and terminal colour codes are removed from what it shows. If the service does not start, the plugin stays enabled and the card says why. Only administrators see any of this.
 
