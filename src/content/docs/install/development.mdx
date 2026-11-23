@@ -74,6 +74,12 @@ npx vite --port 9000 --strictPort
 
 Open [http://localhost:9000](http://localhost:9000).
 
+## Plugins with a Docker service
+
+Some plugins run a container of their own (flamapy for analytics, the agents' application). From the dev stack you do not start them by hand: in **Configuration → Plugins**, enable the plugin and LINEA runs the compose file its manifest names (`docker compose up -d --build`, so the first start builds the image); disable it and it stops them. The card shows the state of the containers and **Logs** opens their output. This needs Docker on the machine where the server runs.
+
+A plugin that needs variables on the dev server brings a `dev.env` for them: `LINEA_DEV_ENV=../../linea-plugins/agents-plugin/dev.env npm run dev:up`. See [Plugin services](/configure/plugins/#plugin-services).
+
 ## Move ports
 
 Something else uses a default port? Each one has a variable:
