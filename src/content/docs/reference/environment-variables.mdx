@@ -63,7 +63,8 @@ A **Required** of *Yes* means LINEA will not work without it.
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `LINEA_REGISTRY` | No | none | Repository holding the catalogue (`registry.json`), such as `gitlab:linea/registry` or `local:registry/index`. Unset lists every repo with the topic |
-| `REGISTRY_DIR` | No | parent of `server/` | Folder containing `metamodels/` and `modules/`, published to the local host at start (the Docker image has them in `/srv/registry`) |
+| `REGISTRY_DIR` | No | parent of `server/` | Folder containing `metamodels/` and `modules/`, and optionally `examples/` with example lines, published to the local host at start (the Docker image has them in `/srv/registry`) |
+| `LINEA_EXAMPLES_GROUP` | No | `examples` | Group of the local host the example lines of `REGISTRY_DIR` go into |
 | `LINEA_FEATURE_METAMODEL` | No | `gitlab:linea/metamodels/featuremodel` | Where the feature metamodel that every line has is published |
 | `LINEA_TRUSTED_NAMESPACES` | No | anywhere | Comma-separated GitLab paths or `github:<owner>` packages may come from |
 | `LINEA_GITHUB_OWNERS` | No | none | GitHub users or organisations whose packages are listed even when the deployment is not on GitHub |

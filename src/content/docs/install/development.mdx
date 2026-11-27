@@ -107,7 +107,11 @@ The sample metamodels and modules live in the `metamodels/` and `modules/` folde
 REGISTRY_DIR=/path/to/workspace npm run dev:up
 ```
 
-The server publishes them into the git host at startup, so **Modules** in the menu lists them.
+The server publishes them into the git host at startup, so **Modules** in the menu lists them. To have the calculator example too, with a line of each kind and its products, point it at the `calculator-examples` folder of [linea-examples](/get-started/examples/):
+
+```bash
+REGISTRY_DIR=/path/to/linea-examples/calculator-examples npm run dev:up
+```
 
 ## Starting over
 

@@ -47,19 +47,28 @@ The catalogue is informational. A package that is not registered can still be us
 
 ## Publish the sample registry
 
-The repository ships example `metamodels/` and `modules/`. Publish them into your git host with the script the server uses itself:
+A folder of packages holds `metamodels/<name>/` and `modules/<name>/`, and may hold `examples/<line>/` with example lines and their products (as [`calculator-examples`](/get-started/examples/) does). Publish it into your git host with the script the server uses itself:
 
 ```bash
 cd apps/server
-node scripts/publish-registry.mjs
+# GitLab: <group>/metamodels/<name>, <group>/modules/<name>
+GITLAB_URL=https://gitlab.example.com GITLAB_TOKEN=<token with api scope> \
+  node scripts/publish-registry.mjs --group <group> --dir <folder> --registry gitlab:<group>/index
+# GitHub: <owner>/<name>
+GITHUB_TOKEN=<token with repo scope> \
+  node scripts/publish-registry.mjs --host github --owner <user or organisation> --dir <folder> --registry github:<owner>/linea-registry
 ```
+
+Every package gets a repository with its files on `main` and a tag `v<version>`; `--registry` lists them in that catalogue, and `--dry-run` shows what would be done. Each example line gets a repository with the topic `spl`, and each of its products one with the topic `product`, which LINEA lists when it is opened. It can be run again: versions already tagged and lines already there are left alone.
 
 On the `local` host this happens **automatically at startup** when you set:
 
 ```ini
 LINEA_REGISTRY=local:registry/index
-REGISTRY_DIR=/path/to/workspace     # the folder that contains metamodels/ and modules/
+REGISTRY_DIR=/path/to/folder        # the folder that contains metamodels/, modules/ and examples/
 ```
+
+The example lines go into the group `examples` (`LINEA_EXAMPLES_GROUP` changes it), where everybody can work in them.
 
 The Docker image carries them in `/srv/registry`.
 
